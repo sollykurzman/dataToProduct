@@ -1,11 +1,12 @@
 :root{
 	--maincolor: #5B97EC;
+  --menubarheight: 80px;
+  --sidebarwidth: 300px;
+  --sidebarpadding: 20px;
 }
 
-
-
 html {
-    font-size: 16px; /* This sets 1rem to 16px */
+    font-size: 16px;
 }
 
 * {
@@ -14,7 +15,7 @@ html {
 }
 
 body {
-  background-color: grey;
+  background-color: #F0F0F0;
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -30,100 +31,120 @@ a:hover {
 	color: var(--highlightcolor);
 }
 
-#sidebar {
+#menu_bar {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  width: 25vw;
-  /* height: calc(100vh - 40px); */
-  overflow-y: auto;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: var(--menubarheight);
+  overflow: visible;
   z-index: 1000;
   margin: 0px;
   padding: 0px;
-  border: 40px solid white;
-  border-radius: 10px;
   background-color: white;
+  display: flex;
   box-shadow: #46464633 0px 0px 20px;
 }
 
 .container {
 	position: relative;
-  background-color: white;
 	width: 100%;
 	height: 100%;
   overflow: visible;
 }
 
-.filter-section {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  width: 100%;
-  padding-bottom: 40px;
-  justify-content: center;
-}
-
-#sidebar h3 {
+#menu_bar h3 {
   font-size: 1rem;
   margin-bottom: 10px;
 }
 
-#sidebar .container div {
+#menu_bar .container div {
   margin-bottom: 0px;
 }
 
 #header {
-  padding-top: 30px;
-  padding-bottom: 40px;
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translate(0, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 #header img {
-  height: 60px;
+  height: 40px;
 }
 
 #header h1 {
-  font-size: 2rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: #5B97EC;
 }
 
 #header h2 {
-  font-size: 1rem;
+  font-size: 0.8rem;
   color: #464646;
 }
 
-/* #sidebar-toggle {
+#search_filters {
   position: absolute;
-  top: 0px;
-  right: 0px;
-  height: 20px;
-} */
+  top: 50%;
+  transform: translate(0, -50%);
+  right: 20px;
+  width: 70vw;
+  display: flex;
+  justify-content: space-between;
+}
 
 #sidebar-toggle {
   height: 20px;
 }
 
 #sidebar-close-button {
-  position: absolute;
-  top: 0px;
-  right: -20px;
   z-index: 9999;
+}
+
+#search_bar {
+  width: 25%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#search_bar img {
+  height: 20px;
 }
 
 #departure_airport {
   border: 1px solid #ddd;
   width: 100%;
   padding: 10px;
+  top: 0px;
+}
+
+#date_selection {
+  width: 25%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#budget_selection {
+  width: 20%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 #search_button_container {
-  justify-content: center;
-  /* padding-bottom: 0px !important; */
+  top: 0px;
+  right: 0px;
 }
 
 #search_btn {
-  padding: 15px 25px;
-  background-color: var(--maincolor) !important;
+  padding: 10px 20px;
+  background-color: #5B97EC !important;
   font-weight: 500;
   color: white;
   border: none;
@@ -132,12 +153,73 @@ a:hover {
   cursor: pointer;
 }
 
-#map {
+#map_container {
   position: fixed !important;
-  top: 0; left: 0;
-  width: 100% !important;
-  height: 100% !important;
+  top: calc(var(--menubarheight) + 20px); right: 20px;
+  width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding)) !important;
+  height: calc(100vh - var(--menubarheight) - 40px) !important;
   z-index: 1;
+  border-radius: 10px;
+  transition: 1s ease;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute !important;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100vw - 40px) !important;
+  height: calc(100vh - var(--menubarheight) - 40px) !important;
+  z-index: 1;
+}
+
+#map_container.closed {
+  width: calc(100vw - 40px) !important;
+  transition: 1s ease;
+}
+
+#sidebar {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  left: var(--sidebarpadding);
+  width: var(--sidebarwidth);
+  height: calc(100vh - var(--menubarheight) - 40px);
+  background-color: white;
+  border-radius: 10px;
+  z-index: 1001;
+  overflow-y: auto;
+  transition: 1s ease;
+}
+
+#sidebar.closed {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  left: var(--sidebarpadding);
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  border-radius: 10px;
+  z-index: 1001;
+  overflow-y: none;
+}
+
+#close_sidebar_icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  transform: rotate(45deg) translate(2px, 0);
+  width: 20px;
+  height: 20px;
+  z-index: 1001;
+  overflow-y: none;
+  transition: 1s ease;
+}
+
+#sidebar.closed #close_sidebar_icon {
+  /* top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg) translate(-2px, 0); */
+  transform: rotate(-90deg) translate(-2px, 0);
 }
 
 .irs-line {
@@ -149,9 +231,9 @@ a:hover {
 }
 
 .irs-bar {
-  background-color: var(--maincolor) !important;
-  border-color: var(--maincolor) !important;
-  top: 22.5px !important;   /* match the value above */
+  background-color: #5B97EC !important;
+  border-color: #5B97EC !important;
+  top: 22.5px !important;
 }
 
 .irs-grid-pol.small, .irs-grid-pol, .irs-grid-text, .isr-grid {
@@ -166,136 +248,146 @@ a:hover {
   width: 16px !important;
   height: 16px !important;
   top: 18px !important;
-  background-color: var(--maincolor) !important;
+  background-color: #5B97EC !important;
   border: none !important;
   box-shadow: none !important;
 }
 
 .irs-to, .irs-from {
-  background-color: var(--maincolor) !important;
+  background-color: #5B97EC !important;
 }
-
-/* .leaflet-control-attribution {
-  display: none !important;
-} */
 
 .leaflet-top {
   left: auto !important;
   right: 10px !important;
 }
 
-/* Remove the dropdown arrow from selectize inputs */
 .selectize-control.single .selectize-input:after {
   display: none !important;
 }
 
-/* POPUPS */
+.departure_icon {
+  width: 20px;
+  height: 20px;
+  background-color: var(--maincolor);
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.destination_icon {
+  width: 20px;
+  height: 20px;
+  background-color: #9b59b6;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
 .leaflet-popup-content-wrapper {
-        border-radius: 8px;
-        padding: 0;
-        overflow: hidden;
-    }
-    .leaflet-popup-content {
-        margin: 0;
-        width: 200px !important;
-    }
-    .popup-header {
-        background-color: var(--maincolor); /* Matches your path color */
-        color: white;
-        padding: 10px 15px;
-        font-weight: bold;
-        font-size: 16px;
-    }
-    .popup-body {
-        padding: 15px;
-        background-color: #fff;
-    }
-    .popup-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        font-size: 13px;
-        color: #555;
-    }
-    .popup-label {
-        font-weight: 600;
-    }
-    .popup-price {
-        margin-top: 12px;
-        padding-top: 10px;
-        border-top: 1px solid #eee;
-        text-align: center;
-    }
-    .popup-price-label {
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #888;
-        letter-spacing: 0.5px;
-    }
-    .popup-price-value {
-        color: #2d3748;
-        font-size: 18px;
-        font-weight: bold;
-    }
+    border-radius: 8px;
+    padding: 0;
+    overflow: hidden;
+}
+.leaflet-popup-content {
+    margin: 0;
+    width: 200px !important;
+}
+.popup-header {
+    background-color: var(--maincolor);
+    color: white;
+    padding: 10px 15px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.popup-body {
+    padding: 15px;
+    background-color: #fff;
+}
+.popup-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #555;
+}
+.popup-label {
+    font-weight: 600;
+}
+.popup-price {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+.popup-price-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.5px;
+}
+.popup-price-value {
+    color: #2d3748;
+    font-size: 18px;
+    font-weight: bold;
+}
 
-    .breakdown-section {
-        margin-top: 12px;
-        margin-bottom: 12px;
-        padding-top: 10px;
-        border-top: 1px solid #f0f0f0;
-    }
-    .breakdown-title {
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #888;
-        margin-bottom: 5px;
-        font-weight: 600;
-    }
-    
-    /* The Bar Container */
-    .cost-bar-container {
-        display: flex;
-        width: 100%;
-        height: 10px;
-        background-color: #edf2f7;
-        border-radius: 5px;
-        overflow: hidden; /* Ensures corners stay rounded */
-    }
-    
-    /* Individual Segments */
-    .cost-bar-segment { height: 100%; }
-    .cost-bar-segment.flight { background-color: #4299e1; } /* Blue */
-    .cost-bar-segment.hotel  { background-color: #9f7aea; } /* Purple */
-    .cost-bar-segment.living { background-color: #48bb78; } /* Green */
-    
-    /* The Legend */
-    .cost-legend {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 6px;
-        font-size: 11px;
-        color: #718096;
-    }
-    .legend-item { display: flex; align-items: center; }
-    .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-        margin-right: 4px;
-    }
-    .dot.flight { background-color: #4299e1; }
-    .dot.hotel  { background-color: #9f7aea; }
-    .dot.living { background-color: #48bb78; }
+.breakdown-section {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+.breakdown-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
 
-    /* --- Total Price Section --- */
-    .popup-price {
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid #eee;
-        text-align: center;
-        background-color: #fafbfc; /* Slight contrast for price area */
-        margin-left: -15px; margin-right: -15px; margin-bottom: -15px; padding-bottom: 15px; /* Full width background */
-    }
-    .popup-price-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
-    .popup-price-value { color: #2d3748; font-size: 20px; font-weight: bold; }
+/* The Bar Container */
+.cost-bar-container {
+    display: flex;
+    width: 100%;
+    height: 10px;
+    background-color: #edf2f7;
+    border-radius: 5px;
+    overflow: hidden; /* Ensures corners stay rounded */
+}
+
+/* Individual Segments */
+.cost-bar-segment { height: 100%; }
+.cost-bar-segment.flight { background-color: #4299e1; } /* Blue */
+.cost-bar-segment.hotel  { background-color: #9f7aea; } /* Purple */
+.cost-bar-segment.living { background-color: #48bb78; } /* Green */
+
+/* The Legend */
+.cost-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #718096;
+}
+.legend-item { display: flex; align-items: center; }
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+}
+.dot.flight { background-color: #4299e1; }
+.dot.hotel  { background-color: #9f7aea; }
+.dot.living { background-color: #48bb78; }
+
+/* --- Total Price Section --- */
+.popup-price {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+    background-color: #fafbfc; /* Slight contrast for price area */
+    margin-left: -15px; margin-right: -15px; margin-bottom: -15px; padding-bottom: 15px; /* Full width background */
+}
+.popup-price-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+.popup-price-value { color: #2d3748; font-size: 20px; font-weight: bold; }
