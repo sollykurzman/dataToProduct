@@ -1,0 +1,181 @@
+/* :root{
+	font-size: 10px;
+} */
+
+html {
+    font-size: 16px; /* This sets 1rem to 16px */
+}
+
+* {
+	margin: 0px;
+	padding: 0px;
+}
+
+body {
+  background-color: grey;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, p, a, div  {
+	color: black;
+	text-decoration: none;
+	font-weight: normal;
+	margin: 0px;
+	padding: 0px;
+}
+
+a:hover {
+	color: var(--highlightcolor);
+}
+
+#sidebar {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 25vw;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1000;
+  margin: 0px;
+  padding: 0px;
+  border: 40px solid white;
+  border-radius: 0px 20px 20px 0px;
+  background-color: white;
+  box-shadow: #46464633 0px 0px 20px;
+}
+
+.container {
+	position: relative;
+  background-color: white;
+	width: 100%;
+	height: 100%;
+  overflow: visible;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  padding-bottom: 40px;
+}
+
+#sidebar h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+#sidebar .container div {
+  margin-bottom: 0px;
+}
+
+#header {
+  padding-top: 50px;
+  padding-bottom: 40px;
+}
+
+#header img {
+  height: 60px;
+}
+
+#header h1 {
+  font-size: 2rem;
+  font-weight: 500;
+  color: #5B97EC;
+}
+
+#header h2 {
+  font-size: 1rem;
+  color: #464646;
+}
+
+/* #sidebar-toggle {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 20px;
+} */
+
+#sidebar-toggle {
+  height: 20px;
+}
+
+#sidebar-close-button {
+  position: absolute;
+  top: 0px;
+  right: -20px;
+  z-index: 9999;
+}
+
+#departure_airport {
+  border: 1px solid #ddd;
+  width: 100%;
+  padding: 10px;
+}
+
+#search_button_container {
+  justify-content: center;
+}
+
+#search_btn {
+  padding: 15px 25px;
+  background-color: #5B97EC !important;
+  font-weight: 500;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#map {
+  position: fixed !important;
+  top: 0; left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+}
+
+.irs-line {
+  height: 4px !important;
+  border-radius: 0px;
+  background: grey !important;
+  opacity: 1 !important;
+  border-color: grey !important;
+}
+
+.irs-bar {
+  background-color: #5B97EC !important;
+  border-color: #5B97EC !important;
+  top: 22.5px !important;   /* match the value above */
+}
+
+.irs-grid-pol.small, .irs-grid-pol, .irs-grid-text, .isr-grid {
+  display: none !important;
+}
+
+.irs--shiny.irs-with-grid {
+  height: 40px !important;
+}
+
+.irs-handle {
+  width: 16px !important;
+  height: 16px !important;
+  top: 18px !important;
+  background-color: #5B97EC !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.irs-to, .irs-from {
+  background-color: #5B97EC !important;
+}
+
+/* .leaflet-control-attribution {
+  display: none !important;
+} */
+
+/* Remove the dropdown arrow from selectize inputs */
+.selectize-control.single .selectize-input:after {
+  display: none !important;
+}

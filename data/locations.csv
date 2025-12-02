@@ -1,0 +1,17 @@
+CityName, AirportCode, Country, Latitude, Longitude
+Vienna, VIE, Austria, 48.1103, 16.5697
+Prague, PRG, Czech Republic, 50.1008, 14.2600
+Copenhagen, CPH, Denmark, 55.6180, 12.6508
+Paris, PAR, France, 48.8566, 2.3522
+Munich, MUC, Germany, 48.3537, 11.7750
+Berlin, BER, Germany, 52.3667, 13.5033
+Dublin, DUB, Ireland, 53.4264, -6.2499
+Amsterdam, AMS, Netherlands, 52.3105, 4.7683
+Madrid, MAD, Spain, 40.4839, -3.5679
+Barcelona, BCN, Spain, 41.2974, 2.0833
+Zurich, ZRH, Switzerland, 47.4582, 8.5555
+London, LON, United Kingdom, 51.5074, -0.1278
+Edinburgh, EDI, United Kingdom, 55.9508, -3.3725
+Glasgow, GLA, United Kingdom, 55.8715, -4.4331
+Stockholm, STO, Sweden, 59.3293, 18.0686
+Tallinn, TLL, Estonia, 59.4133, 24.8328
