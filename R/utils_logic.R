@@ -11,21 +11,38 @@ get_other_airports <- function(airport_code, airports_df) {
         filter(code != airport_code)
 }
 
+
+
 get_trip_costs <- function(departure_code, arrivals_df, trip_duration) {
 
     # Placeholder price generator
     dummy_cost_function <- function(dep, arr_df) {
         runif(nrow(arr_df), min = 10, max = 200) |> round()
     }
+
+    message("--- Structure of arrivals_df ---")
+    str(arrivals_df) # Prints the structure (type, length, preview)
+    # print(flight_price_vector) # Uncomment this if you want to see all values
+    message("--------------------------------------")
   
     flight_price_vector <- dummy_cost_function(departure_code, arrivals_df)
     hotel_price_vector <- dummy_cost_function(departure_code, arrivals_df)
     living_cost_vector <- dummy_cost_function(departure_code, arrivals_df)
 
+    message("--- Structure of flight_price_vector ---")
+    str(flight_price_vector) # Prints the structure (type, length, preview)
+    # print(flight_price_vector) # Uncomment this if you want to see all values
+    message("--------------------------------------")
+
     arrivals_df$flight_cost <- flight_price_vector*trip_duration
     arrivals_df$hotel_cost <- hotel_price_vector*trip_duration
     arrivals_df$living_cost <- living_cost_vector*trip_duration
     arrivals_df$total_cost <- flight_price_vector + hotel_price_vector + living_cost_vector
+
+    message("--- Structure of arrivals_df now ---")
+    str(arrivals_df) # Prints the structure (type, length, preview)
+    # print(flight_price_vector) # Uncomment this if you want to see all values
+    message("--------------------------------------")
   
     return(arrivals_df)
 }

@@ -1,0 +1,541 @@
+:root{
+	--maincolor: #5B97EC;
+  --menubarheight: 80px;
+  --sidebarwidth: 300px;
+  --sidebarpadding: 20px;
+  --backgroundcolour: #F0F0F0;
+}
+
+html {
+    font-size: 16px;
+}
+
+* {
+	margin: 0px;
+	padding: 0px;
+}
+
+body {
+  background-color: var(--backgroundcolour);
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, p, a, div  {
+	color: black;
+	text-decoration: none;
+	font-weight: normal;
+	margin: 0px;
+	padding: 0px;
+}
+
+a:hover {
+	color: var(--highlightcolor);
+}
+
+#menu_bar {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: var(--menubarheight);
+  overflow: visible;
+  z-index: 1000;
+  margin: 0px;
+  padding: 0px;
+  background-color: white;
+  display: flex;
+  box-shadow: #46464633 0px 0px 20px;
+}
+
+.container {
+	position: relative;
+	width: 100%;
+	height: 100%;
+  overflow: visible;
+}
+
+#menu_bar h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+#menu_bar .container div {
+  margin-bottom: 0px;
+}
+
+#header {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translate(0, -50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#header img {
+  height: 40px;
+}
+
+#header h1 {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #5B97EC;
+}
+
+#header h2 {
+  font-size: 0.8rem;
+  color: #464646;
+}
+
+#search_filters {
+  position: absolute;
+  top: 50%;
+  transform: translate(0, -50%);
+  right: 20px;
+  width: 70vw;
+  display: flex;
+  justify-content: space-between;
+}
+
+#sidebar-toggle {
+  height: 20px;
+}
+
+#sidebar-close-button {
+  z-index: 9999;
+}
+
+#search_bar {
+  width: 25%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#search_bar img {
+  height: 20px;
+}
+
+#departure_airport {
+  border: 1px solid #ddd;
+  width: 100%;
+  padding: 10px;
+  top: 0px;
+}
+
+#date_selection {
+  width: 25%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#budget_selection {
+  width: 20%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#search_button_container {
+  top: 0px;
+  right: 0px;
+}
+
+#search_btn {
+  padding: 10px 20px;
+  background-color: #5B97EC !important;
+  font-weight: 500;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+#map_container {
+  position: fixed !important;
+  top: calc(var(--menubarheight) + 20px); right: 20px;
+  /* width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding)) !important; */
+  width: calc(100vw - 40px) !important;
+  height: calc(100vh - var(--menubarheight) - 40px) !important;
+  z-index: 1;
+  border-radius: 10px;
+  transition: 1s ease;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute !important;
+  top: 50%;
+  /* left: 50%; */
+  left: calc(50% + var(--sidebarwidth)/2 + var(--sidebarpadding)/2);
+  transform: translate(-50%, -50%);
+  width: calc(100vw + var(--sidebarwidth)) !important;
+  height: calc(100vh - var(--menubarheight) - 40px) !important;
+  transition: 1s ease;
+  z-index: 1;
+}
+
+/* #map_container.closed {
+  width: calc(100vw - 40px) !important;
+  transition: 1s ease;
+} */
+
+#map_container.closed #map {
+  /* left: calc(50% + var(--sidebarwidth)/2); */
+  left: 50%;
+}
+/* 
+#sidebar {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  left: var(--sidebarpadding);
+  width: var(--sidebarwidth);
+  height: calc(100vh - var(--menubarheight) - 40px);
+  background-color: white;
+  border-radius: 10px;
+  z-index: 1001;
+  overflow-y: auto;
+  transition: 1s ease;
+}
+
+#sidebar.closed {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  left: var(--sidebarpadding);
+  width: 40px;
+  height: 40px;
+  background-color: white;
+  border-radius: 10px;
+  z-index: 999;
+  overflow-y: none;
+ }  */
+/* 1. Base Sidebar Styling */
+
+/* 1. Base Sidebar Styling */
+#sidebar {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  left: var(--sidebarpadding);
+  width: var(--sidebarwidth);
+  height: calc(100vh - var(--menubarheight) - 40px);
+  background-color: white;
+  z-index: 1001;
+  overflow: visible; /* Necessary for the scoops to stick out */
+  /* Transition width/height/radius, but NOT outline */
+  transition: width 1s ease, height 1s ease, border-radius 1s ease;
+  
+  /* Apply the radius to the visible box */
+  border-radius: 10px;
+  
+  /* REMOVED: outline property (this was causing the blocky look when open) */
+}
+
+/* 2. Closed State Styling */
+#sidebar.closed {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px; 
+  /* We maintain the background color and transitions */
+}
+
+/* 3. The Scoops (Pseudo-elements) */
+/* We define them on the ID, but keep opacity 0 so they hide when open */
+#sidebar::before,
+#sidebar::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: transparent; /* Transparent so we see through the curve */
+  pointer-events: none; /* Ensures they don't block clicks */
+  opacity: 0; /* HIDDEN by default (when open) */
+  transition: opacity 0.2s ease; /* Fade them out quickly when opening */
+}
+
+/* 4. Show Scoops ONLY when closed */
+#sidebar.closed::before,
+#sidebar.closed::after {
+  opacity: 1; /* Make them visible */
+  transition-delay: 0.8s; /* Wait for the sidebar to shrink before showing "scoops" */
+}
+
+/* TOP SCOOP: Connects the top-right of the button */
+#sidebar.closed::before {
+  top: 0px; 
+  right: -40px;
+  rotate: 180deg;
+  
+  /* The Magic: Round the bottom-right corner, then use shadow to fill the "box" */
+  border-bottom-right-radius: 20px;
+  box-shadow: 20px 20px 0 20px var(--backgroundcolour); 
+  /* The shadow color effectively paints the 'gap' */
+}
+
+/* BOTTOM SCOOP: Connects the bottom-right of the button */
+#sidebar.closed::after {
+  bottom: -20px;
+  right: 0;
+  /* rotate: 180deg; */
+  /* The Magic: Round the top-right corner, then use shadow to fill the "box" */
+  border-top-right-radius: 20px;
+  /* box-shadow: 10px -10px 0 10px var(--backgroundcolour); */
+  box-shadow: 20px 20px 0 20px var(--backgroundcolour); 
+}
+
+/* #sidebar {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  left: var(--sidebarpadding);
+  width: var(--sidebarwidth);
+  height: calc(100vh - var(--menubarheight) - 40px);
+  background-color: white;
+  border-radius: 10px;
+  z-index: 999;
+  overflow-y: auto;
+  transition: 1s ease;
+  outline: 20px solid var(--backgroundcolour);
+}
+
+#sidebar.closed {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: visible;
+  outline: 20px solid var(--backgroundcolour);
+}
+
+#sidebar::before {
+  content: "";
+  position: absolute;
+  top: 0px;
+  right: -50px;
+  width: 20px;
+  height: 20px;
+  rotate: 0deg;
+  background-image: radial-gradient(circle at 0 0, transparent 20px, yellow 20.5px);
+}
+
+#sidebar::after {
+  content: "";
+  position: absolute;
+  bottom: -40px;
+  left: 0px;
+  width: 20px;
+  height: 20px;
+  rotate: 270deg;
+  background-image: radial-gradient(circle at 0 100%, transparent 20px, yellow 20.5px);
+}
+
+#sidebar.closed::before {
+  content: "";
+  position: absolute;
+  top: 0px;
+  right: -40px;
+  width: 20px;
+  height: 20px;
+  rotate: 180deg;
+  background-image: radial-gradient(circle at 0 0, transparent 20px, var(--backgroundcolour) 20.5px);
+}
+
+#sidebar.closed::after {
+  content: "";
+  position: absolute;
+  bottom: -40px;
+  left: 0px;
+  width: 20px;
+  height: 20px;
+  rotate: 270deg;
+  background-image: radial-gradient(circle at 0 100%, transparent 20px, var(--backgroundcolour) 20.5px);
+} */
+
+#close_sidebar_icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  transform: rotate(45deg) translate(2px, 0);
+  width: 20px;
+  height: 20px;
+  z-index: 1001;
+  overflow-y: none;
+  transition: 1s ease;
+}
+
+#sidebar.closed #close_sidebar_icon {
+  /* top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-90deg) translate(-2px, 0); */
+  transform: rotate(-90deg) translate(-2px, 0);
+}
+
+.irs-line {
+  height: 4px !important;
+  border-radius: 0px;
+  background: grey !important;
+  opacity: 1 !important;
+  border-color: grey !important;
+}
+
+.irs-bar {
+  background-color: #5B97EC !important;
+  border-color: #5B97EC !important;
+  top: 22.5px !important;
+}
+
+.irs-grid-pol.small, .irs-grid-pol, .irs-grid-text, .isr-grid {
+  display: none !important;
+}
+
+.irs--shiny.irs-with-grid {
+  height: 40px !important;
+}
+
+.irs-handle {
+  width: 16px !important;
+  height: 16px !important;
+  top: 18px !important;
+  background-color: #5B97EC !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.irs-to, .irs-from {
+  background-color: #5B97EC !important;
+}
+
+.leaflet-top {
+  left: auto !important;
+  right: 10px !important;
+}
+
+.selectize-control.single .selectize-input:after {
+  display: none !important;
+}
+
+.departure_icon {
+  width: 20px;
+  height: 20px;
+  background-color: var(--maincolor);
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.destination_icon {
+  width: 20px;
+  height: 20px;
+  background-color: #9b59b6;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    padding: 0;
+    overflow: hidden;
+}
+.leaflet-popup-content {
+    margin: 0;
+    width: 200px !important;
+}
+.popup-header {
+    background-color: var(--maincolor);
+    color: white;
+    padding: 10px 15px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.popup-body {
+    padding: 15px;
+    background-color: #fff;
+}
+.popup-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: #555;
+}
+.popup-label {
+    font-weight: 600;
+}
+.popup-price {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+.popup-price-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.5px;
+}
+.popup-price-value {
+    color: #2d3748;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.breakdown-section {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+.breakdown-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+/* The Bar Container */
+.cost-bar-container {
+    display: flex;
+    width: 100%;
+    height: 10px;
+    background-color: #edf2f7;
+    border-radius: 5px;
+    overflow: hidden; /* Ensures corners stay rounded */
+}
+
+/* Individual Segments */
+.cost-bar-segment { height: 100%; }
+.cost-bar-segment.flight { background-color: #4299e1; } /* Blue */
+.cost-bar-segment.hotel  { background-color: #9f7aea; } /* Purple */
+.cost-bar-segment.living { background-color: #48bb78; } /* Green */
+
+/* The Legend */
+.cost-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #718096;
+}
+.legend-item { display: flex; align-items: center; }
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+}
+.dot.flight { background-color: #4299e1; }
+.dot.hotel  { background-color: #9f7aea; }
+.dot.living { background-color: #48bb78; }
+
+/* --- Total Price Section --- */
+.popup-price {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+    text-align: center;
+    background-color: #fafbfc; /* Slight contrast for price area */
+    margin-left: -15px; margin-right: -15px; margin-bottom: -15px; padding-bottom: 15px; /* Full width background */
+}
+.popup-price-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+.popup-price-value { color: #2d3748; font-size: 20px; font-weight: bold; }

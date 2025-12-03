@@ -71,13 +71,15 @@ ui_main <- function() {
 
         )
       ),
-      div(id = "map_container",
+
+
+      div(id = "map_container", class = "closed",
         div(class="container",
           leafletOutput("map", width = "100%", height = "100%"),
         )
       ),
       
-      div(id = "sidebar", #class = "closed",
+      div(id = "sidebar", class = "closed",
         div(class="container",
           img(src="icons/chevron_right.svg", id="close_sidebar_icon"),
         )
