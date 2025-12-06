@@ -10,10 +10,26 @@ ui_main <- function() {
       
       // 1. Toggle the class
       $('#sidebar').toggleClass('closed');
-      $('#map_container').toggleClass('closed');
+      $('#map_container').toggleClass('sidebar');
       
       // 2. Notify Shiny (Optional, keep if you have server logic)
       Shiny.setInputValue('sidebar_clicked', new Date().getTime());
+    });
+
+    $(document).on('click', '#close_statbar_icon', function() {
+      
+      // 1. Toggle the class
+      $('#statbar').toggleClass('closed');
+      $('#map_container').toggleClass('statbar');
+      
+      // 2. Notify Shiny (Optional, keep if you have server logic)
+      Shiny.setInputValue('statbar_clicked', new Date().getTime());
+    });
+
+    // NEW: when a sidebar card is clicked
+    $(document).on('click', '.sidebaritem', function() {
+      var cityId = $(this).data('city');
+      Shiny.setInputValue('sidebar_item_clicked', cityId, {priority: 'event'});
     });
 ")),
     includeCSS("www/styles.css"),
@@ -58,26 +74,30 @@ ui_main <- function() {
       ),
 
 
-      div(id = "map_container", class = "closed",
+      div(id = "map_container",
         div(class="container",
-          leafletOutput("map", width = "100%", height = "100%"),
+          leafletOutput("map", width = "100%", height = "100%")
         )
       ),
       
       div(id = "sidebar", class = "closed",
+        p("Top Destinations"),
+        div(class="fade-top"),
         div(class="container",
-          p("Top Destinations"),
-          uiOutput("sidebar_results"),
-          img(src="icons/chevron_right.svg", id="close_sidebar_icon"),
-        )
-      )
+          uiOutput("sidebar_results")
+        ),
+        div(class="fade-bottom"),
+        img(src="icons/chevron_right.svg", id="close_sidebar_icon")
+      ),
 
-      # div(id="statbar", class ="closed",
-      #   div(class="container",
-      #     span("Total Destinations Found: "),
-      #     span(textOutput("total_destinations_found", inline=TRUE), id="total_destinations_found_value")
-      #   )
-      # )
+      div(id="statbar", class = "closed",
+        # div(class="container",
+          uiOutput("statbar_info"),
+          # plotlyOutput("return_plot"),
+          # plotlyOutput("departure_plot"),
+        # ),
+        img(src="icons/chevron_right.svg", id="close_statbar_icon")
+      )
     )
   )
 }
