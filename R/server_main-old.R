@@ -1,7 +1,6 @@
 library(shiny)
 library(leaflet)
 library(lubridate)
-library(htmltools)
 
 server_main <- function(input, output, session) {
 
@@ -35,26 +34,79 @@ server_main <- function(input, output, session) {
   # })
 
   output$map <- renderLeaflet({
-  leaflet() %>%
-    addProviderTiles(providers$CartoDB.Positron) %>%
-    setView(lng = 0, lat = 40, zoom = 3) #%>%
-    # htmlwidgets::onRender("
-    #   function(el, x) {
-    #     var map = this;
+    leaflet() %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      setView(lng = 0, lat = 40, zoom = 3) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        var map = this;
 
-    #     // Attach hover logic once map is ready
-    #     map.on('layeradd', function(e) {
-    #       var layer = e.layer;
+        // Attach hover logic once map is ready
+        map.on('layeradd', function(e) {
+          var layer = e.layer;
 
-    #       if (layer instanceof L.CircleMarker) {
-    #         layer.on('mouseover', function() { this.openPopup(); });
-    #         layer.on('mouseout', function() { this.closePopup(); });
-    #       }
-    #     });
-    #   }
-    # ")
-})
+          if (layer instanceof L.CircleMarker) {
+            layer.on('mouseover', function() { this.openPopup(); });
+            layer.on('mouseout', function() { this.closePopup(); });
+          }
+        });
+      }
+    ")
+      # htmlwidgets::onRender("
+      # function(el, x) {
+      #     var map = this;
+      #     map.eachLayer(function(layer){
+      #       if(layer instanceof L.CircleMarker){
+      #         layer.on('mouseover', function(){
+      #           this.openPopup();
+      #         });
+      #         layer.on('mouseout', function(){
+      #           this.closePopup();
+      #         });
+      #       }
+      #     });
+      #   }
+      # ")
 
+      # htmlwidgets::onRender("
+      #   function(el, x) {
+
+      #     // Override Leaflet's label auto-positioning
+      #     L.Marker.include({
+      #       _adjustLabelPosition: function() {
+      #         if (!this._label || !this._map) return;
+
+      #         const label = this._label._container;
+      #         const map = this._map;
+      #         const pos = map.latLngToContainerPoint(this._latlng);
+
+      #         const labelH = label.offsetHeight;
+      #         const padding = 10;
+
+      #         let direction = 'top';
+
+      #         // If too close to top → put below
+      #         if (pos.y - labelH < padding) {
+      #           direction = 'bottom';
+      #         }
+
+      #         // If too close to bottom → put above
+      #         if (pos.y + labelH > map.getSize().y - padding) {
+      #           direction = 'top';
+      #         }
+
+      #         label.classList.remove('leaflet-label-top', 'leaflet-label-bottom');
+      #         label.classList.add(
+      #           direction === 'top'
+      #             ? 'leaflet-label-top'
+      #             : 'leaflet-label-bottom'
+      #         );
+      #       }
+      #     });
+
+      #   }
+      # ")
+  })
 
   observeEvent(input$departure_date, {
     new_min_return <- input$departure_date %m+% days(1)
@@ -67,6 +119,17 @@ server_main <- function(input, output, session) {
       value = new_value
     )
   }, ignoreInit = TRUE)
+
+  observeEvent(input$sidebar_clicked, {
+    print("The sidebar icon was clicked!")
+    # all_lons <- c(departure_info$lon, filtered_cities$lon)
+    # all_lats <- c(departure_info$lat, filtered_cities$lat)
+    # map %>%
+    #   fitBounds(
+    #     lng1 = min(all_lons), lat1 = min(all_lats),
+    #     lng2 = max(all_lons), lat2 = max(all_lats)
+    #   )
+  })
 
   observeEvent(input$search_btn, {
     
@@ -137,12 +200,6 @@ server_main <- function(input, output, session) {
       departure_code = departure_info$code
     )
 
-    sidebar_boxes <- make_destination_box(
-      city_data = filtered_cities,
-      trip_duration = trip_duration,
-      departure_code = departure_info$code
-    )
-
     hover_content <- lapply(popup_content, HTML)
 
     map %>%
@@ -163,43 +220,6 @@ server_main <- function(input, output, session) {
         label = icon_list,
         labelOptions = labelOptions(noHide = TRUE, direction = 'center', textOnly = TRUE)
       ) %>%
-      addCircleMarkers(
-        data = filtered_cities,
-        lng = ~lon, lat = ~lat,
-        radius = 10,
-        fillOpacity = 0,
-        opacity = 0,
-        label = hover_content,
-        labelOptions = labelOptions(
-          noHide = FALSE,          # Only show when hovering
-          direction = "auto",       # Appears above the city
-          sticky = TRUE,
-          style = list(
-            "border-radius" = "10px",
-            "width" = "200px"
-          )
-        )
-      )
-      # addCircleMarkers(
-      #   data = filtered_cities,
-      #   lng = ~lon, lat = ~lat,
-      #   radius = 10,
-      #   fillOpacity = 0,
-      #   opacity = 0,
-      #   label = hover_content,
-      #   # popupOptions = popupOptions(
-      #   #   autoPan = TRUE,
-      #   #   autoPanPadding = c(50, 50),
-      #   #   closeButton = FALSE,
-      #   #   keepInView = TRUE,
-      #   #   maxWidth = 260
-      #   # ),
-      #   # layerId = ~city,  # REQUIRED for hover binding
-      #   # options = pathOptions(
-      #   #   className = "large_marker_area"
-      #   # )
-      # )
-
       # addCircleMarkers(
       #   data = filtered_cities,
       #   lng = ~lon, lat = ~lat,
@@ -208,7 +228,23 @@ server_main <- function(input, output, session) {
       #   popup = popup_content,
       #   label = ~city
       # )
-      
+      # addCircleMarkers(
+      #   data = filtered_cities,
+      #   lng = ~lon, lat = ~lat,
+      #   radius = 10,
+      #   fillOpacity = 0,
+      #   opacity = 0,
+      #   label = hover_content,
+      #   labelOptions = labelOptions(
+      #     noHide = FALSE,          # Only show when hovering
+      #     direction = "auto",       # Appears above the city
+      #     sticky = TRUE,
+      #     style = list(
+      #       "border-radius" = "10px",
+      #       "width" = "200px"
+      #     )
+      #   )
+      # )
       # addCircleMarkers(
       #   data = filtered_cities,
       #   lng = ~lon, lat = ~lat,
@@ -224,6 +260,22 @@ server_main <- function(input, output, session) {
       #     keepInView = TRUE # forces up/down flipping
       #   )
       # )
+      addCircleMarkers(
+        data = filtered_cities,
+        lng = ~lon, lat = ~lat,
+        radius = 25,
+        fillOpacity = 0,
+        opacity = 0,
+        popup = hover_content,
+        popupOptions = popupOptions(
+          autoPan = TRUE,
+          autoPanPadding = c(50, 50),
+          closeButton = FALSE,
+          keepInView = TRUE,
+          maxWidth = 260
+        ),
+        layerId = ~city  # REQUIRED for hover binding
+      )
 
     map %>%
       fitBounds(
@@ -249,9 +301,5 @@ server_main <- function(input, output, session) {
         path.style.animation = 'drawLine 2.5s linear forwards';
       });
     "))
-
-    output$sidebar_results <- renderUI({
-      HTML(sidebar_boxes)
-    })
   })
 }

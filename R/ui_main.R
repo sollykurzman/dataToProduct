@@ -1,35 +1,20 @@
 library(shiny)
 library(leaflet)
+library(shinyjs)
 
 ui_main <- function() {
   fluidPage(
-  #   tags$script(HTML("
-  #   $(document).on('click', '#close_sidebar_icon', function() {
-  #     $('#sidebar').toggleClass('closed');
-  #     $('#map').toggleClass('closed');
-  #     Shiny.setInputValue('sidebar_clicked', new Date().getTime());
-
-  #     setTimeout(function() {
-  #      // Find the Shiny Leaflet widget by its ID ('map')
-  #      var mapWidget = HTMLWidgets.find('#map');
-       
-  #       if (mapWidget) {
-  #         // Access the underlying Leaflet instance and fix the size
-  #         mapWidget.getMap().invalidateSize();
-  #       }
-  #     }, 0); // slightly longer than CSS transition to be safe
-  #   });
-  # ")),
-  tags$script(HTML("
-  $(document).on('click', '#close_sidebar_icon', function() {
-    
-    // 1. Toggle the class
-    $('#sidebar').toggleClass('closed');
-    $('#map_container').toggleClass('closed');
-    
-    // 2. Notify Shiny (Optional, keep if you have server logic)
-    Shiny.setInputValue('sidebar_clicked', new Date().getTime());
-  });
+    useShinyjs(),
+    tags$script(HTML("
+    $(document).on('click', '#close_sidebar_icon', function() {
+      
+      // 1. Toggle the class
+      $('#sidebar').toggleClass('closed');
+      $('#map_container').toggleClass('closed');
+      
+      // 2. Notify Shiny (Optional, keep if you have server logic)
+      Shiny.setInputValue('sidebar_clicked', new Date().getTime());
+    });
 ")),
     includeCSS("www/styles.css"),
     tagList(
@@ -81,9 +66,18 @@ ui_main <- function() {
       
       div(id = "sidebar", class = "closed",
         div(class="container",
+          p("Top Destinations"),
+          uiOutput("sidebar_results"),
           img(src="icons/chevron_right.svg", id="close_sidebar_icon"),
         )
       )
+
+      # div(id="statbar", class ="closed",
+      #   div(class="container",
+      #     span("Total Destinations Found: "),
+      #     span(textOutput("total_destinations_found", inline=TRUE), id="total_destinations_found_value")
+      #   )
+      # )
     )
   )
 }

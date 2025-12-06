@@ -164,6 +164,12 @@ a:hover {
   overflow: hidden;
 }
 
+.large_marker_area {
+  background-color: orange;
+  /* transform: translate(-50%, 0); */
+  margin: -10px !important;
+}
+
 #map {
   position: absolute !important;
   top: 50%; left: 50%;
@@ -175,7 +181,7 @@ a:hover {
 
 #map_container.closed {
   width: calc(100vw - 40px) !important;
-  transition: 1s ease;
+  transition: 1.2s ease;
 }
 
 #sidebar {
@@ -201,6 +207,7 @@ a:hover {
   border-radius: 10px;
   z-index: 1001;
   overflow-y: none;
+  /* border: 10px solid white; */
 }
 
 #close_sidebar_icon {
@@ -222,6 +229,16 @@ a:hover {
   transform: rotate(-90deg) translate(-2px, 0);
 }
 
+#sidebar p {
+  font-size: 1.2rem;
+  color: #464646;
+  margin: 10px 0px;
+}
+
+#sidebar.closed h1, #sidebar.closed h2, #sidebar.closed p, #sidebar.closed .item {
+  display: none;
+}
+ 
 .irs-line {
   height: 4px !important;
   border-radius: 0px;
@@ -280,6 +297,7 @@ a:hover {
   background-color: #9b59b6;
   border-radius: 50%;
   border: 2px solid white;
+  pointer-events: none !important;
 }
 
 .leaflet-popup-content-wrapper {
@@ -297,6 +315,7 @@ a:hover {
     padding: 10px 15px;
     font-weight: bold;
     font-size: 16px;
+    border-radius: 6px 6px 0px 0px;
 }
 .popup-body {
     padding: 15px;
@@ -317,6 +336,9 @@ a:hover {
     padding-top: 10px;
     border-top: 1px solid #eee;
     text-align: center;
+    background-color: #fafbfc; /* Slight contrast for price area */
+    margin-left: -15px; margin-right: -15px; margin-bottom: -15px; padding-bottom: 15px; /* Full width background */
+    border-radius: 0px 0px 6px 6px;
 }
 .popup-price-label {
     font-size: 11px;
@@ -391,3 +413,81 @@ a:hover {
 }
 .popup-price-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
 .popup-price-value { color: #2d3748; font-size: 20px; font-weight: bold; }
+
+/* Define the animation keyframes */
+@keyframes drawLine {
+  from {
+    stroke-dashoffset: 5000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.flight-path-anim {
+  stroke-dasharray: 5000;
+  stroke-dashoffset: 5000;
+  /* animation: drawLine 2.5s linear forwards 0.1s; */
+}
+
+
+/* The class to apply to your polylines */
+/* .flight-path-anim { */
+  /* 1. Set dasharray large enough to cover the longest path. 
+        (3000 is usually enough for map paths).
+     2. Set offset to same value to initially "hide" the line.
+  */
+  /* stroke-dasharray: 3000;
+  stroke-dashoffset: 3000; */
+  
+  /* Run the animation over 2.5 seconds */
+  /* animation: drawLine 2.5s linear forwards;  */
+  
+  /* Optional: Drop shadow for the line to make it pop */
+  /* filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.3));
+} */
+
+.sidebaritem {
+  /* background: orange; */
+  width: calc(100% - 40px);
+  height: 100px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid rgb(177, 177, 177);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: #55555533 0px 0px 10px;
+}
+
+#sidebar.closed .sidebaritem {
+  display: none;
+}
+
+.sidebaritem h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.sidebaritem h4 {
+  font-size: 1rem;
+  color: #333;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+.sidebaritem img {
+  position: absolute;
+  height: 100%;
+  right: 0px;
+  top: 0px;
+}
+
+.sidebaritem .cost-bar-container {
+  width: 70%;
+}
+
+.sidebaritem .cost-legend {
+  width: 70%;
+}
