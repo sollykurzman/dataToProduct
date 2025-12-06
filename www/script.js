@@ -1,33 +1,33 @@
-L.Marker.include({
-  _adjustLabelPosition: function() {
-    if (!this._label || !this._map) return;
+// L.Marker.include({
+//   _adjustLabelPosition: function() {
+//     if (!this._label || !this._map) return;
 
-    const label = this._label._container;
-    const map = this._map;
-    const pos = map.latLngToContainerPoint(this._latlng);
+//     const label = this._label._container;
+//     const map = this._map;
+//     const pos = map.latLngToContainerPoint(this._latlng);
 
-    const labelWidth = label.offsetWidth;
-    const labelHeight = label.offsetHeight;
+//     const labelWidth = label.offsetWidth;
+//     const labelHeight = label.offsetHeight;
 
-    const padding = 10; // margin from edges
+//     const padding = 10; // margin from edges
 
-    let direction = "top"; // default
+//     let direction = "top"; // default
 
-    // If too close to top → show below
-    if (pos.y - labelHeight < padding) {
-      direction = "bottom";
-    }
+//     // If too close to top → show below
+//     if (pos.y - labelHeight < padding) {
+//       direction = "bottom";
+//     }
 
-    // If too close to bottom → show above
-    if (pos.y + labelHeight > map.getSize().y - padding) {
-      direction = "top";
-    }
+//     // If too close to bottom → show above
+//     if (pos.y + labelHeight > map.getSize().y - padding) {
+//       direction = "top";
+//     }
 
-    // Apply direction
-    label.classList.remove("leaflet-label-top", "leaflet-label-bottom");
-    label.classList.add(direction === "top" ? "leaflet-label-top" : "leaflet-label-bottom");
-  }
-});
+//     // Apply direction
+//     label.classList.remove("leaflet-label-top", "leaflet-label-bottom");
+//     label.classList.add(direction === "top" ? "leaflet-label-top" : "leaflet-label-bottom");
+//   }
+// });
 
 // // Wait for map to load and add animation enhancements
 // $(document).on('shiny:connected', function() {
