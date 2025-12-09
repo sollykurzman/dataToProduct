@@ -1,6 +1,3 @@
-library(shiny)
-library(leaflet)
-library(shinyjs)
 
 ui_main <- function() {
   fluidPage(
@@ -61,7 +58,7 @@ ui_main <- function() {
 
             # h3("Set Budget"),
               div(id = "budget_selection", class = "filter-section",
-              sliderInput("budget", label=NULL, min=200, max=1000, value=c(300,600), step=50, pre="£")
+              sliderInput("budget", label=NULL, min=000, max=1000, value=c(0,600), step=50, pre="£")
             ),
 
             div(id = "search_button_container", class = "filter-section",

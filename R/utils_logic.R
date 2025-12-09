@@ -1,5 +1,4 @@
 # utils_logic.R
-
 # --- Data Helpers ---
 
 validate_dates <- function(start, end) {
@@ -25,26 +24,74 @@ dummy_cost_function <- function(dep, arr_df) {
     runif(nrow(arr_df), min = 10, max = 50) |> round()
 }
 
-dummy_flight_cost_function <- function(dep, arr_df, date) {
-    runif(nrow(arr_df), min = 10, max = 50) |> round()
+# dummy_flight_cost_function <- function(dep, arr_df, date) {
+#     runif(nrow(arr_df), min = 10, max = 50) |> round()
+# }
+
+flight_cost <- function(dep, arr_df, date) {
+
+  map_dbl(arr_df$code, function(single_dest) {
+    prices <- get_flight_prediction(
+      origin = dep, 
+      dest = single_dest, 
+      trip_date = date
+    )
+
+    return(result$price)
+  })
+}
+
+hotel_cost <- function(arr_df, arrival_date, leaving_date) {
+
+  map_dbl(arr_df$code, function(single_dest) {
+    prices <- get_total_hotel_cost(
+      shortcode = single_dest,
+      arrival_date = arrival_date,
+      leaving_date = leaving_date
+    )
+
+    return(prices) 
+  })
+}
+
+living_cost <- function(arr_df, arrival_date, leaving_date) {
+
+  map_dbl(arr_df$code, function(single_dest) {
+    prices <- get_total_living_cost(
+      shortcode = single_dest,
+      arrival_date = arrival_date,
+      leaving_date = leaving_date
+    )
+
+    return(prices$total)
+  })
 }
 
 get_trip_costs <- function(departure_code, arrivals_df, departure_date, return_date) {
     
-    departure_flight_price_vector <- dummy_flight_cost_function(departure_code, arrivals_df, departure_date)
-    return_flight_price_vector <- dummy_flight_cost_function(departure_code, arrivals_df, return_date)
-    hotel_price_vector <- dummy_cost_function(departure_code, arrivals_df)
-    living_cost_vector <- dummy_cost_function(departure_code, arrivals_df)
+    departure_flight_price_vector <- flight_cost(departure_code, arrivals_df, departure_date)
+    return_flight_price_vector <- flight_cost(departure_code, arrivals_df, return_date)
+    hotel_price_vector <- hotel_cost(arrivals_df, departure_date, return_date)
+    living_cost_vector <- living_cost(arrivals_df, departure_date, return_date)
+
+    # print(paste0("Departure Flight Cost, out:", departure_flight_price_vector, " in:", return_flight_price_vector))
 
     trip_duration <- get_trip_duration(departure_date, return_date)
+
+    # index <- 3
     
     # Note: Logic preserved from your snippet (multiplying all by duration)
     arrivals_df$departure_flight_cost <- departure_flight_price_vector
     arrivals_df$return_flight_cost <- return_flight_price_vector
     arrivals_df$flight_cost <- departure_flight_price_vector + return_flight_price_vector
-    arrivals_df$hotel_cost <- hotel_price_vector * trip_duration
-    arrivals_df$living_cost <- living_cost_vector * trip_duration
+    # print(paste0("Flight Cost: ", arrivals_df$flight_cost[index]))
+    arrivals_df$hotel_cost <- hotel_price_vector
+    # print(paste0("Hotel Cost: ", arrivals_df$hotel_cost[index]))
+    arrivals_df$living_cost <- living_cost_vector
+    # print(paste0("Living Cost: ", arrivals_df$living_cost[index]))
     arrivals_df$total_cost <- (arrivals_df$flight_cost + arrivals_df$hotel_cost + arrivals_df$living_cost)
+
+    print(paste0("Total Cost: ", arrivals_df$total_cost))
   
     return(arrivals_df)
 }

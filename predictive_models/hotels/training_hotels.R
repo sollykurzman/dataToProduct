@@ -8,7 +8,7 @@ library(lubridate)
 library(readr)
 
 # load data
-df <- read_csv("../../data/hotelData.csv", show_col_types = FALSE)
+df <- read_csv("data/hotelData.csv", show_col_types = FALSE)
 
 # cleansing
 df_clean <- df %>%

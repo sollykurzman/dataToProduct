@@ -1,9 +1,8 @@
-library(dplyr)
-library(lubridate)
+
 
 # load traine dmodels
-if(file.exists("hotel_models.rds")) {
-  model_list <- readRDS("hotel_models.rds")
+if(file.exists("predictive_models/hotels/hotel_models.rds")) {
+  model_list <- readRDS("predictive_models/hotels/hotel_models.rds")
 } else {
   stop("Error: Please run '01_train_models.R' first.")
 }
@@ -20,6 +19,8 @@ city_lookup <- c(
 
 # main func
 get_total_hotel_cost <- function(shortcode, arrival_date, leaving_date) {
+
+  shortcode   <- str_trim(toupper(shortcode))
   
   # convert city name
   city_name <- city_lookup[shortcode]
@@ -53,6 +54,6 @@ get_total_hotel_cost <- function(shortcode, arrival_date, leaving_date) {
 
 
 # test
-cost <- get_total_hotel_cost("BCN", "2026-01-14", "2026-12-19")
-print("Cost:")
-print(cost)
+# cost <- get_total_hotel_cost("BCN", "2026-01-14", "2026-12-19")
+# print("Cost:")
+# print(cost)

@@ -28,8 +28,8 @@ clean_flight_data <- function(df) {
 }
 
 # loading the raw scraped csvs
-raw_nov <- read_csv("../../data/flightData.csv")
-raw_dec <- read_csv("../../data/flightData2.csv")
+raw_nov <- read_csv("data/flightData.csv")
+raw_dec <- read_csv("data/flightData2.csv")
 
 # cleaning them separately just to be safe
 df_nov_clean <- clean_flight_data(raw_nov)
@@ -39,4 +39,4 @@ df_dec_clean <- clean_flight_data(raw_dec)
 master_df <- bind_rows(df_nov_clean, df_dec_clean)
 
 # save to csv
-write_csv(master_df, "../../data/master_flight_data.csv")
+write_csv(master_df, "data/master_flight_data.csv")

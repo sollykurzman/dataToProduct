@@ -6,7 +6,7 @@ library(modelr)
 set.seed(123)
 
 
-df_master <- read_csv("../../data/master_flight_data.csv", show_col_types = FALSE) %>%
+df_master <- read_csv("data/master_flight_data.csv", show_col_types = FALSE) %>%
   mutate(
     # re-parsing dates and factors for training
     Date = ymd(Date),
