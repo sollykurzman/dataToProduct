@@ -83,6 +83,7 @@ print("got seasons")
 train <- left_join(train, season_factors, by = c("route", "month"))
 
 # remove base AND season to see just day effect
+# train$factor here is the season factor
 train$day_ratio <- train$norm_price / (train$base * train$factor)
 
 day_factors <- train %>%
@@ -91,13 +92,42 @@ day_factors <- train %>%
 
 print("got weekdays")
 
+# --- CALC RESIDUALS FOR PROBABILITIES ---
+# see how wrong we were on the training data so we can guess uncertainty later
+
+# rename cols so join doesnt mess up
+s_clean <- season_factors %>% rename(s_fac = factor)
+d_clean <- day_factors %>% rename(d_fac = factor)
+
+# rebuild the prediction for every row
+train_final <- train %>%
+  select(-factor) %>% # remove old cols
+  left_join(s_clean, by = c("route", "month")) %>%
+  left_join(d_clean, by = c("route", "wday"))
+
+# fill nas with 1 just in case
+train_final$s_fac[is.na(train_final$s_fac)] <- 1
+train_final$d_fac[is.na(train_final$d_fac)] <- 1
+
+# what the model predicts
+train_final$pred <- train_final$base * train_final$multiplier * train_final$s_fac * train_final$d_fac
+
+# the error ratio (Actual / Predicted)
+train_final$error_ratio <- train_final$Price / train_final$pred
+
+# filter out infinity or weird stuff
+residuals <- train_final$error_ratio[is.finite(train_final$error_ratio)]
+
+print("calculated residuals")
+
 # save everything in a list
 model_output <- list(
   curve = curve,
   base = base_prices,
   season = season_factors,
   day = day_factors,
-  avg_price = median(train$norm_price) # fallback
+  avg_price = median(train$norm_price), # fallback
+  residuals = residuals # saved for bootstrapping
 )
 
 saveRDS(model_output, "multiplicativeFactor2_model.rds")
