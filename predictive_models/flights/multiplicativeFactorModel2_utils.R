@@ -5,7 +5,7 @@ library(lubridate)
 # make sure file is in same folder
 model <- readRDS("multiplicativeFactor2_model.rds")
 
-# function to predict
+# function to predict point value
 get_flight_prediction <- function(origin, dest, date, scraped_date = Sys.Date()) {
   
   # upper case just in case
@@ -63,8 +63,29 @@ get_flight_prediction <- function(origin, dest, date, scraped_date = Sys.Date())
   # calculate
   final <- base_val * time_val * season_val * day_val
   
-  return(round(final, 2))
+  return(final)
+}
+
+# NEW FUNCTION: PROBABILISTIC FORECAST
+# returns a CDF function you can query
+get_flight_cdf <- function(origin, dest, date, scraped_date = Sys.Date()) {
+  
+  # 1. get the main prediction
+  point_pred <- get_flight_prediction(origin, dest, date, scraped_date)
+  
+  if (is.na(point_pred)) return(NA)
+  
+  # 2. bootstrap
+  # assume we make the same errors as we did in the past
+  # multiply point prediction by all historical error ratios
+  simulated_prices <- point_pred * model$residuals
+  
+  # 3. make cdf
+  # ecdf creates a function that tells you probability X <= x
+  my_cdf <- ecdf(simulated_prices)
+  
+  return(my_cdf)
 }
 
 # test it
-print(get_flight_prediction("LON", "STO", "2026-01-8"))
+# print(round(get_flight_prediction("LON", "TLL", "2026-01-05"), 2))
