@@ -19,26 +19,27 @@ server_main <- function(input, output, session) {
   
   # Populate Airport Dropdown
   airport_choices <- setNames(departure_airports$code, departure_airports$city)
-  # updateSelectizeInput(session, "departure_airport",
-  #   choices = airport_choices,
-  #   selected = character(0),
-  #   options = list(placeholder = "Type to search...")
-
-  #ON DEPLOYMENT REMOVE FROM HERE 
   updateSelectizeInput(session, "departure_airport",
     choices = airport_choices,
-    selected = airport_choices[1],
+    selected = character(0),
     options = list(placeholder = "Type to search...")
   )
 
-  shinyjs::delay(300, {
-      # Optional: Update budget manually if you want a specific test case
-      updateNumericInput(session, "budget_min", value = 0)
-      updateNumericInput(session, "budget_max", value = 1500)
+  #ON DEPLOYMENT REMOVE FROM HERE 
+  # updateSelectizeInput(session, "departure_airport",
+  #   choices = airport_choices,
+  #   selected = airport_choices[1],
+  #   options = list(placeholder = "Type to search...")
+  # )
+
+  # shinyjs::delay(300, {
+  #     # Optional: Update budget manually if you want a specific test case
+  #     updateNumericInput(session, "budget_min", value = 0)
+  #     updateNumericInput(session, "budget_max", value = 1500)
       
-      # Simulate the click
-      shinyjs::click("search_btn") 
-  })
+  #     # Simulate the click
+  #     shinyjs::click("search_btn") 
+  # })
   #TO HERE
 
   # Initialize Dates
