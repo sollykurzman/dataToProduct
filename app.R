@@ -8,6 +8,7 @@ library(plotly)
 library(purrr)
 library(tidyverse)
 library(dplyr)
+library(shinyWidgets)
 
 source("R/data.R")
 source("predictive_models/flights/flight_utils.R")

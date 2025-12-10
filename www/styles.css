@@ -53,7 +53,7 @@ a:hover {
   width: 100vw;
   height: var(--menubarheight);
   overflow: visible;
-  z-index: 1000;
+  z-index: 3000;
   margin: 0px;
   padding: 0px;
   background-color: white;
@@ -132,11 +132,47 @@ a:hover {
   gap: 10px;
 }
 
+/* Container for the 3 elements */
 #budget_selection {
-  width: 20%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between boxes and slider */
+    width: 25% !important; /* Adjust width as needed for your specific navbar */
+}
+
+/* The wrapper for the numeric inputs */
+.budget-input-box {
+    width: 60px; /* Fixed small width */
+}
+
+/* Hide the up/down spinner arrows in numeric inputs for a cleaner look */
+.budget-input-box input[type=number]::-webkit-inner-spin-button, 
+.budget-input-box input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+/* Style the actual input text box */
+.budget-input-box input {
+    height: 30px;
+    padding: 5px;
+    font-size: 0.9rem;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* The wrapper for the slider to make it flexible */
+.budget-slider-container {
+    flex-grow: 1; /* Takes up remaining space */
+    margin-top: -15px; /* Fix vertical alignment slightly */
+}
+
+/* Override Shiny's default slider margins to fit the bar */
+.budget-slider-container .shiny-input-container {
+    width: 100% !important;
+    padding-bottom: 0px !important;
 }
 
 #search_button_container {
@@ -172,6 +208,7 @@ a:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   width: calc(100vw - 40px) !important;
+  transition: 0.8s ease;
   height: calc(100vh - var(--menubarheight) - 40px) !important;
   z-index: 1;
 }
@@ -179,29 +216,70 @@ a:hover {
 #map_container {
   position: fixed !important;
   top: calc(var(--menubarheight) + 20px);
-  right: 20px;
-  width: calc(100vw - 40px) !important;
+  left: 80px;
+  width: calc(100vw - 100px) !important;
   height: calc(100vh - var(--menubarheight) - 40px) !important;
   z-index: 1;
   border-radius: 10px;
   transition: 1s ease;
+  background-color: white;
   overflow: hidden;
 }
 
 #map_container.sidebar {
   width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding)) !important;
+  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   transition: 1.0s ease;
 }
 
 #map_container.statbar {
-  right: calc(var(--statbarwidth) + var(--sidebarpadding) + 20px);
-  width: calc(100vw - var(--statbarwidth) - 40px - var(--sidebarpadding)) !important;
+  width: calc(100vw - var(--statbarwidth) - var(--sidebarpadding)*6) !important;
   transition: 1.0s ease;
 }
 
 #map_container.sidebar.statbar {
+  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding)) !important;
   transition: 1.0s ease;
+}
+
+#map_container.statbar.compressed {
+  left: 80px;
+  width: 40px !important;
+  transition: 1.0s ease;
+}
+
+#map_container.sidebar.statbar.compressed {
+  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
+  width: 40px !important;
+  transition: 1.0s ease;
+}
+
+#map_container.statbar.compressed #map {
+  opacity: 0;
+}
+
+#map_container.sidebar.statbar.compressed #map {
+  opacity: 0;
+}
+
+#map_open {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  z-index: 1002;
+  cursor: pointer;
+  display: none;
+  opacity: 0;
+  transition: 1.0s ease;
+}
+
+#map_container.compressed #map_open {
+  display: block;
+  opacity: 1;
 }
 
 /* =========================================
@@ -225,11 +303,95 @@ a:hover {
   top: calc(var(--menubarheight) + 20px);
   left: var(--sidebarpadding);
   width: 40px;
-  height: 40px;
+  /* height: 40px; */
   background-color: white;
   border-radius: 10px;
   z-index: 1001;
   overflow-y: none;
+}
+
+.sidebar-header-container .shiny-input-select {
+  position: absolute;
+  top: 15px;
+  right: 0px;
+  z-index: 11;
+  transition: 0.5s ease;
+  opacity: 1;
+  /* width: 120px; */
+  font-size: 0.7rem;
+  /* height: 20px; */
+  background-color: white;
+}
+
+/* 1. Target the Main Input Box (The part you see before clicking) */
+.sidebar-header-container .selectize-input {
+  background: transparent !important;       /* No white background */
+  border: none !important;                  /* No grey border */
+  box-shadow: none !important;              /* No default shadow or glow */
+  padding: 0px !important;                  /* Remove internal padding */
+  min-height: 0px !important;               /* Allow it to be smaller than default */
+  height: auto !important;
+  line-height: 1.2 !important;              /* Tighten text height */
+  /* text-align: right !important; */
+  /* padding-right: 20px !important; */
+}
+
+/* 2. Remove the "Focus" Glow (When you click it) */
+.sidebar-header-container .selectize-input.focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 3. Remove the "Dropdown Arrow" container styling */
+/* (Selectize adds a gradient/border to the arrow area by default) */
+.sidebar-header-container .selectize-control.single .selectize-input::after {
+  border: none !important;                  /* Remove triangle border tricks */
+  content: " \25BC";                        /* Simple unicode arrow */
+  font-size: 10px;
+  right: 0px;                               /* align to far right */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #5B97EC;                           /* Match your app color */
+}
+
+/* 4. Fix Alignment of the Text itself */
+/* The 'item' div inside holds the text "Price (Low-High)" */
+.sidebar-header-container .selectize-input .item {
+  padding-right: 15px !important;           /* Make room for the arrow */
+  vertical-align: middle !important;
+}
+
+.sidebar-header-container .selectize-input input {
+  caret-color: transparent !important; /* Makes the blinking line invisible */
+  cursor: pointer !important;          /* Shows a hand cursor instead of text bar */
+  font-size: 1px !important;           /* Minimizes the cursor height */
+  color: transparent !important;       /* Ensures no text is seen if typed accidentally */
+  width: 0px !important;               /* Minimizes width (from previous step) */
+  display: none !important;        /* Hides it completely */
+}
+
+/* 5. Optional: Style the Dropdown Menu (The part that pops open) */
+/* You usually WANT a shadow here, but here is how to control it */
+.sidebar-header-container .selectize-dropdown {
+  margin-top: 5px !important;
+  margin-right: 5px !important;
+  border: 1px solid #eee !important;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1) !important; /* Keep a soft shadow for the list */
+  border-radius: 8px !important;
+  /* width: auto !important;                   /* Let it fit the content */
+  /* min-width: 140px !important; */
+  left: auto !important;    /* Stop it from aligning to the left */
+  right: 0px !important;    /* Force it to align to the right edge */
+  width: max-content !important; /* Let it grow as wide as the text needs */
+  min-width: 100% !important;    /* But never smaller than the button */
+}
+
+#sidebar.closed .sidebar-header-container .shiny-input-select {
+  opacity: 0;
+}
+
+.sidebar-header-container .selectize-dropdown {
+  background-color: white !important;
 }
 
 #close_sidebar_icon {
@@ -245,7 +407,8 @@ a:hover {
 }
 
 #sidebar.closed #close_sidebar_icon {
-  transform: rotate(-90deg) translate(-2px, 0);
+  transform: rotate(180deg);
+  margin-bottom: calc((100vh - var(--menubarheight) - 40px) / 2 - 20px);
 }
 
 #sidebar p {
@@ -400,11 +563,41 @@ a:hover {
   right: calc(var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding));
 }
 
+body:has(#sidebar.closed) #statbar.maximised {
+    /* special styling */
+    width: calc(100vw - (var(--sidebarpadding) * 8)) !important;
+}
+
+#statbar.maximised {
+  position: fixed;
+  top: calc(var(--menubarheight) + 20px);
+  right: var(--sidebarpadding);
+  width: calc(100vw - var(--sidebarwidth) - (var(--sidebarpadding) * 6));
+  transition: 1s ease;
+}
+
 #close_statbar_icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transform:  translate(2px, 0) rotate(180deg);
+  background-color: white;
+  /* padding: 20px; */
+  /* outline: 5px solid white; */
+  border: 5px solid white;
+  box-sizing: border-box;
+  border-radius: 15px;
+  width: 30px;
+  height: 30px;
+  z-index: 1005;
+  /* overflow-y: none; */
+  transition: 1s ease;
+}
+
+#maximise_statbar_icon {
   position: absolute;
   bottom: 10px;
   left: 10px;
-  transform: rotate(-225deg) translate(2px, 0);
   width: 20px;
   height: 20px;
   z-index: 1001;
@@ -412,9 +605,13 @@ a:hover {
   transition: 1s ease;
 }
 
+#statbar.maximised #maximise_statbar_icon {
+  transform: rotate(180deg) translate(-2px, 0);
+}
+/* 
 #statbar.closed #close_statbar_icon {
   transform: rotate(-90deg) translate(-2px, 0);
-}
+} */
 
 #statbar .container {
   padding: 0 !important;
@@ -429,6 +626,9 @@ a:hover {
 #statbar .contents {
   margin-top: calc(var(--statbarwidth) * 2/5) !important;
   background-color: white;
+  width: var(--statbarwidth) !important;
+  position: absolute;
+  right: 0px;
 }
 
 #statbar_info {
@@ -438,11 +638,16 @@ a:hover {
 }
 
 #statbar .statbar-image {
-  width: 100%;
+  width: var(--statbarwidth) !important;
   position: absolute;
-  left: 0px;
+  right: 0px;
   top: 0px;
   z-index: 1;
+  transition: 0.5s ease;
+}
+
+#statbar.maximised .statbar-image {
+  border-radius: 0px 0px 0px 10px;
 }
 
 .sticky-header {
@@ -518,6 +723,12 @@ a:hover {
 #statbar .cost-bar-segment {
   height: 0.9rem !important;
   border-radius: calc(0.9rem/2);
+  transition: 0.1s ease;
+}
+
+/* Optional: Fade effect for text changes */
+.statbar-header h1, .total-price, .segment-price {
+  transition: color 0.3s ease;
 }
 
 #return_plot, #departure_plot {
@@ -526,6 +737,18 @@ a:hover {
   margin-bottom: 20px; /* Add spacing between the two plots */
   padding: 0px 15px;
   height: 200px !important;
+}
+
+.graphtitles {
+  font-size: 0.8rem;
+  color: #333;
+  padding-left: 15px;
+  width: 100%;
+  text-align: center;
+}
+
+#departure_plot_title {
+  margin-top: 40px;
 }
 
 /* =========================================
@@ -547,7 +770,8 @@ a:hover {
 }
 
 .breakdown-container {
-  width: 80%;
+  width: 90%;
+  margin: 0 0 0 5%;
 }
 
 /* The Bar Container */
@@ -622,7 +846,7 @@ a:hover {
 
 .leaflet-top {
   left: auto !important;
-  right: 10px !important;
+  right: 40px !important;
 }
 
 .departure_icon {
