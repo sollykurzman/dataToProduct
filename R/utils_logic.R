@@ -96,34 +96,87 @@ get_trip_costs <- function(departure_code, arrivals_df, departure_date, return_d
     return(arrivals_df)
 }
 
-get_date_window <- function(date, x) {
-  date <- as.Date(date)
-  seq(from = date - x, to = date + x, by = "day")
-}
+# get_date_window <- function(date, x) {
+#   date <- as.Date(date)
+#   seq(from = date - x, to = date + x, by = "day")
+# }
 
+# get_prices_around <- function(departure_code, city_df, departure_date, return_date, window = 3) {
+  
+#   # 1) Build date windows
+#   dep_window <- get_date_window(departure_date, window)
+#   ret_window <- get_date_window(return_date, window)
+  
+#   # 2) Price generator (placeholder)
+#   dummy_flight_cost_function <- function(dep, arr_df, date_vec) {
+#     # Return a vector of prices, one for each date
+#     runif(length(date_vec), min = 10, max = 50) |> round()
+#   }
+  
+#   # 3) Generate prices for each date in the windows
+#   dep_prices <- dummy_flight_cost_function(departure_code, city_df, dep_window)
+#   ret_prices <- dummy_flight_cost_function(departure_code, city_df, ret_window)
+  
+#   # 4) Return structured result
+#   list(
+#     departure_window = dep_window,
+#     departure_prices = dep_prices,
+    
+#     return_window    = ret_window,
+#     return_prices    = ret_prices
+#   )
+# }
 get_prices_around <- function(departure_code, city_df, departure_date, return_date, window = 3) {
   
-  # 1) Build date windows
+  # 1) Build date windows (+/- window days)
   dep_window <- get_date_window(departure_date, window)
   ret_window <- get_date_window(return_date, window)
   
-  # 2) Price generator (placeholder)
-  dummy_flight_cost_function <- function(dep, arr_df, date_vec) {
-    # Return a vector of prices, one for each date
-    runif(length(date_vec), min = 10, max = 50) |> round()
+  # 2) Helper to fetch ABSOLUTE prices
+  fetch_prices <- function(origin, dest, dates) {
+    sapply(dates, function(d) {
+      if (d < Sys.Date()) return(NA) 
+      
+      tryCatch({
+        pred <- get_flight_prediction(origin, dest, d)
+        return(pred$price)
+      }, error = function(e) {
+        return(NA) 
+      })
+    })
   }
+
+  dest_code <- city_df$code
   
-  # 3) Generate prices for each date in the windows
-  dep_prices <- dummy_flight_cost_function(departure_code, city_df, dep_window)
-  ret_prices <- dummy_flight_cost_function(departure_code, city_df, ret_window)
+  # 3) Fetch Raw Prices
+  # A. DEPARTURE LEG: Origin -> Destination (e.g., LON -> PAR)
+  raw_dep_prices <- fetch_prices(departure_code, dest_code, dep_window)
   
-  # 4) Return structured result
+  # B. RETURN LEG: Destination -> Origin (e.g., PAR -> LON)
+  # *** FIX: Swapped inputs so we fly BACK home ***
+  raw_ret_prices <- fetch_prices(dest_code, departure_code, ret_window)
+  
+  # 4) Calculate RELATIVE Difference (Price - Selected_Date_Price)
+  center_index <- window + 1 
+  
+  dep_base <- raw_dep_prices[center_index]
+  if (is.na(dep_base)) dep_base <- 0
+  
+  ret_base <- raw_ret_prices[center_index]
+  if (is.na(ret_base)) ret_base <- 0
+  
+  dep_diff <- raw_dep_prices - dep_base
+  ret_diff <- raw_ret_prices - ret_base
+  
+  dep_diff[is.na(dep_diff)] <- 0
+  ret_diff[is.na(ret_diff)] <- 0
+
+  # 5) Return results
   list(
     departure_window = dep_window,
-    departure_prices = dep_prices,
-    
+    departure_prices = dep_diff, 
     return_window    = ret_window,
-    return_prices    = ret_prices
+    return_prices    = ret_diff
   )
 }
 
