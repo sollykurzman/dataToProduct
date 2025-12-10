@@ -152,7 +152,20 @@ ui_main <- function() {
       ),
       
       div(id = "sidebar", class = "closed",
-        p("Top Destinations"),
+        # p("Top Destinations"),
+        div(class = "sidebar-header-container",
+          p("Top Destinations"),
+              
+              # Expanded Choices
+          selectInput("sort_by", label = NULL, 
+            choices = c(
+              "Price (Low-High)" = "price_asc", 
+              "Price (High-Low)" = "price_desc",
+              "Distance (Near-Far)" = "dist_asc",
+              "Distance (Far-Near)" = "dist_desc"
+            ),
+            width = "140px")
+        ),
         div(class="fade-top"),
         div(class="container",
           uiOutput("sidebar_results")
@@ -220,7 +233,13 @@ ui_main <- function() {
                   h2(class="graphtitles", id="departure_plot_title", "Departure price fluctuations"),
                   plotlyOutput("departure_plot", height = "200px"),
                   h2(class="graphtitles", id="return_plot_title", "Return price fluctuations"),
-                  plotlyOutput("return_plot", height = "200px")
+                  plotlyOutput("return_plot", height = "200px"),
+                  h2(class="graphtitles", id="cfd_plot_title", "Price Probability (Simulation)"),
+                  plotlyOutput("cfd_plot", height = "200px"),
+                  h2(class="graphtitles", id="season_plot_title", "Seasonality (Cheapest Months)"),
+                  plotlyOutput("season_plot", height = "200px"),
+                  h2(class="graphtitles", id="weekday_plot_title", "Best Day to Fly"),
+                  plotlyOutput("weekday_plot", height = "200px")
               )
           )
         ),

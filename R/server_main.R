@@ -42,7 +42,7 @@ server_main <- function(input, output, session) {
   #TO HERE
 
   # Initialize Dates
-  updateDateInput(session, "return_date", value = Sys.Date() + 14, min = Sys.Date())
+  updateDateInput(session, "return_date", value = Sys.Date() + 12, min = Sys.Date())
   updateDateInput(session, "departure_date", value = Sys.Date() + 7, min = Sys.Date())
 
   # Ensure Return Date > Departure Date
@@ -75,6 +75,23 @@ server_main <- function(input, output, session) {
 
   output$departure_plot <- plotly::renderPlotly({
     plotly::plot_ly(x = c(), y = c(), type = "bar") %>% empty_plot_layout()
+  })
+
+  output$cfd_plot <- plotly::renderPlotly({
+    plotly::plot_ly(x = c(), type = "histogram") %>% empty_plot_layout()
+  })
+
+  output$season_plot <- plotly::renderPlotly({
+    plotly::plot_ly(x = c(), y = c(), type = "scatter", mode = "lines") %>% 
+      empty_plot_layout() %>%
+      plotly::layout(yaxis = list(title = "Avg Price"))
+  })
+
+  # 2. Empty Weekday Plot (Bar Chart)
+  output$weekday_plot <- plotly::renderPlotly({
+    plotly::plot_ly(x = c(), y = c(), type = "bar") %>% 
+      empty_plot_layout() %>%
+      plotly::layout(yaxis = list(title = "Price Impact"))
   })
 
   # --- 3. UI Interactions (Statbar) ---
@@ -196,6 +213,107 @@ server_main <- function(input, output, session) {
       plotly::config(displayModeBar = FALSE)
   })
 
+  output$cfd_plot <- plotly::renderPlotly({
+    req(selected_destination())
+    city_data <- selected_destination()
+    
+    # 1. Get the full prediction object (including cfd_data)
+    # We use the specific departure date chosen by the user
+    pred_result <- get_flight_prediction(
+      origin = rv$departure_code, 
+      dest = city_data$code, 
+      trip_date = rv$departure_date
+    )
+    
+    # 2. Extract the simulation data
+    sim_data <- pred_result$cfd_data # Dataframe with column 'Price'
+    current_price <- pred_result$price
+    
+    # 3. Create the Histogram
+    plotly::plot_ly(x = sim_data$Price, type = "histogram", 
+            marker = list(color = "#D3E4FA", line = list(color = "white", width = 1))) %>%
+      
+      # Add a vertical line for the "Current Price"
+      plotly::add_segments(x = current_price, xend = current_price, 
+                   y = 0, yend = 500, # arbitrary high number for height
+                   line = list(color = "#5B97EC", width = 3, dash = "dash"),
+                   name = "Est. Price") %>%
+      
+      plotly::layout(
+        title = "",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor  = "rgba(0,0,0,0)",
+        font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
+        xaxis = list(title = "Predicted Price Range", showgrid = FALSE),
+        yaxis = list(title = "Probability", showgrid = TRUE, gridcolor = "#f7f7f7", showticklabels = FALSE),
+        margin = list(l = 35, r = 10, t = 10, b = 30),
+        showlegend = FALSE,
+        bargap = 0.1
+      ) %>%
+      plotly::config(displayModeBar = FALSE)
+  })
+
+  # --- Render Trend Plots ---
+  
+  # 1. Seasonality Plot (Line Chart)
+  output$season_plot <- plotly::renderPlotly({
+    req(selected_destination())
+    city_data <- selected_destination()
+    
+    # Get the trends
+    trends <- get_route_trends(rv$departure_code, city_data$code)
+    data <- trends$seasonality
+    
+    # Ensure correct month order for plotting
+    # (Assuming 'Month' column is "Jan", "Feb" etc.)
+    data$Month <- factor(data$Month, levels = month.abb)
+    data <- data[order(data$Month), ]
+
+    plotly::plot_ly(data, x = ~Month, y = ~base_price, type = 'scatter', mode = 'lines+markers',
+            line = list(color = "#5B97EC", width = 2),
+            marker = list(color = "#5B97EC", size = 6)) %>%
+      plotly::layout(
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor  = "rgba(0,0,0,0)",
+        xaxis = list(title = "", fixedrange=TRUE),
+        yaxis = list(title = "Avg Price", fixedrange=TRUE, tickprefix="£"),
+        margin = list(l=35, r=10, t=10, b=30)
+      ) %>%
+      plotly::config(displayModeBar = FALSE)
+  })
+
+  # 2. Weekday Plot (Bar Chart)
+  output$weekday_plot <- plotly::renderPlotly({
+    req(selected_destination())
+    city_data <- selected_destination()
+    
+    trends <- get_route_trends(rv$departure_code, city_data$code)
+    data <- trends$weekday
+    
+    # Sort Weekdays (Mon -> Sun)
+    days_order <- c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+    data <- data[match(data$Weekday, days_order), ] # Reorder rows
+    data <- na.omit(data) # Safety
+
+    # Color logic: Highlight the cheapest day green, expensive red
+    colors <- rep("#D3E4FA", nrow(data))
+    if(nrow(data) > 0) {
+      colors[which.min(data$day_modifier)] <- "#48bb78" # Green
+      colors[which.max(data$day_modifier)] <- "#e53e3e" # Red
+    }
+
+    plotly::plot_ly(data, x = ~Weekday, y = ~day_modifier, type = 'bar',
+            marker = list(color = colors)) %>%
+      plotly::layout(
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor  = "rgba(0,0,0,0)",
+        xaxis = list(title = "", fixedrange=TRUE),
+        yaxis = list(title = "Price Impact", fixedrange=TRUE, tickprefix="£"),
+        margin = list(l=35, r=10, t=10, b=30)
+      ) %>%
+      plotly::config(displayModeBar = FALSE)
+  })
+
   output$map <- renderLeaflet({
     leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
@@ -258,6 +376,8 @@ server_main <- function(input, output, session) {
     duration      <- get_trip_duration(input$departure_date, input$return_date)
     costs         <- get_trip_costs(input$departure_airport, connections, input$departure_date, input$return_date)
     filtered_data <- filter_cities_by_budget(input$budget, costs)
+
+    print(head(filtered_data))
 
     # C. Update Global State
     rv$destinations   <- filtered_data
@@ -327,8 +447,26 @@ server_main <- function(input, output, session) {
   })
 
   # --- 5. Sidebar Result Renderer ---
+  # output$sidebar_results <- renderUI({
+  #   # If no data, show empty state
+  #   if (is.null(rv$destinations) || nrow(rv$destinations) == 0) {
+  #     return(tags$div(class="no-results",
+  #       tags$h4("No destinations found"),
+  #       tags$p("Try adjusting your filters.")
+  #     ))
+  #   }
+
+  #   sorted_data <- rv$destinations[order(rv$destinations$total_cost, rv$destinations$city), ]
+    
+  #   # Use utility function to generate HTML
+  #   html_content <- make_destination_box(sorted_data, rv$trip_duration, rv$departure_code)
+  #   HTML(html_content)
+  # })
+
+  # --- 5. Sidebar Result Renderer ---
   output$sidebar_results <- renderUI({
-    # If no data, show empty state
+    
+    # 1. Safety Check: If no results, show the "No Results" message
     if (is.null(rv$destinations) || nrow(rv$destinations) == 0) {
       return(tags$div(class="no-results",
         tags$h4("No destinations found"),
@@ -336,9 +474,49 @@ server_main <- function(input, output, session) {
       ))
     }
 
-    sorted_data <- rv$destinations[order(rv$destinations$total_cost, rv$destinations$city), ]
+    # 2. Create a working copy of the data
+    data_to_sort <- rv$destinations
     
-    # Use utility function to generate HTML
+    # 3. Calculate Distance (if needed for sorting)
+    # We fetch the lat/lon of the CURRENT departure airport using the global dataframe
+    dep_lat <- departure_airports$lat[departure_airports$code == rv$departure_code]
+    dep_lon <- departure_airports$lon[departure_airports$code == rv$departure_code]
+    
+    # Calculate simple distance (Euclidean is fine for sorting purposes)
+    data_to_sort$dist_calc <- sqrt((data_to_sort$lat - dep_lat)^2 + (data_to_sort$lon - dep_lon)^2)
+
+    # print(head(data_to_sort))
+    
+    # 4. SORTING LOGIC
+    # We check input$sort_by to see what the user picked
+    if (!is.null(input$sort_by)) {
+      
+      if (input$sort_by == "price_asc") {
+        # Cheapest First (Default)
+        sorted_data <- data_to_sort[order(data_to_sort$total_cost), ]
+        
+      } else if (input$sort_by == "price_desc") {
+        # Most Expensive First
+        sorted_data <- data_to_sort[order(data_to_sort$total_cost, decreasing = TRUE), ]
+        
+      } else if (input$sort_by == "dist_asc") {
+        # Nearest First
+        sorted_data <- data_to_sort[order(data_to_sort$dist_calc), ]
+        
+      } else if (input$sort_by == "dist_desc") {
+        # Furthest First
+        sorted_data <- data_to_sort[order(data_to_sort$dist_calc, decreasing = TRUE), ]
+        
+      } else {
+        # Fallback
+        sorted_data <- data_to_sort[order(data_to_sort$total_cost), ]
+      }
+      
+    } else {
+      sorted_data <- data_to_sort # Fallback if input is null
+    }
+    
+    # 5. Generate HTML
     html_content <- make_destination_box(sorted_data, rv$trip_duration, rv$departure_code)
     HTML(html_content)
   })

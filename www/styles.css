@@ -310,6 +310,90 @@ a:hover {
   overflow-y: none;
 }
 
+.sidebar-header-container .shiny-input-select {
+  position: absolute;
+  top: 15px;
+  right: 0px;
+  z-index: 11;
+  transition: 0.5s ease;
+  opacity: 1;
+  /* width: 120px; */
+  font-size: 0.7rem;
+  /* height: 20px; */
+  background-color: white;
+}
+
+/* 1. Target the Main Input Box (The part you see before clicking) */
+.sidebar-header-container .selectize-input {
+  background: transparent !important;       /* No white background */
+  border: none !important;                  /* No grey border */
+  box-shadow: none !important;              /* No default shadow or glow */
+  padding: 0px !important;                  /* Remove internal padding */
+  min-height: 0px !important;               /* Allow it to be smaller than default */
+  height: auto !important;
+  line-height: 1.2 !important;              /* Tighten text height */
+  /* text-align: right !important; */
+  /* padding-right: 20px !important; */
+}
+
+/* 2. Remove the "Focus" Glow (When you click it) */
+.sidebar-header-container .selectize-input.focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 3. Remove the "Dropdown Arrow" container styling */
+/* (Selectize adds a gradient/border to the arrow area by default) */
+.sidebar-header-container .selectize-control.single .selectize-input::after {
+  border: none !important;                  /* Remove triangle border tricks */
+  content: " \25BC";                        /* Simple unicode arrow */
+  font-size: 10px;
+  right: 0px;                               /* align to far right */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #5B97EC;                           /* Match your app color */
+}
+
+/* 4. Fix Alignment of the Text itself */
+/* The 'item' div inside holds the text "Price (Low-High)" */
+.sidebar-header-container .selectize-input .item {
+  padding-right: 15px !important;           /* Make room for the arrow */
+  vertical-align: middle !important;
+}
+
+.sidebar-header-container .selectize-input input {
+  caret-color: transparent !important; /* Makes the blinking line invisible */
+  cursor: pointer !important;          /* Shows a hand cursor instead of text bar */
+  font-size: 1px !important;           /* Minimizes the cursor height */
+  color: transparent !important;       /* Ensures no text is seen if typed accidentally */
+  width: 0px !important;               /* Minimizes width (from previous step) */
+  display: none !important;        /* Hides it completely */
+}
+
+/* 5. Optional: Style the Dropdown Menu (The part that pops open) */
+/* You usually WANT a shadow here, but here is how to control it */
+.sidebar-header-container .selectize-dropdown {
+  margin-top: 5px !important;
+  margin-right: 5px !important;
+  border: 1px solid #eee !important;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1) !important; /* Keep a soft shadow for the list */
+  border-radius: 8px !important;
+  /* width: auto !important;                   /* Let it fit the content */
+  /* min-width: 140px !important; */
+  left: auto !important;    /* Stop it from aligning to the left */
+  right: 0px !important;    /* Force it to align to the right edge */
+  width: max-content !important; /* Let it grow as wide as the text needs */
+  min-width: 100% !important;    /* But never smaller than the button */
+}
+
+#sidebar.closed .sidebar-header-container .shiny-input-select {
+  opacity: 0;
+}
+
+.sidebar-header-container .selectize-dropdown {
+  background-color: white !important;
+}
+
 #close_sidebar_icon {
   position: absolute;
   bottom: 10px;
