@@ -9,16 +9,17 @@ library(purrr)
 library(tidyverse)
 library(dplyr)
 library(shinyWidgets)
+library(jsonlite)
 
 source("R/data.R")
-source("predictive_models/flights/flight_utils.R")
-source("predictive_models/hotels/hotel_utils.R")
-source("predictive_models/living_utils.R")
-source("R/utils_logic.R")
-source("R/ui_main.R")
-source("R/server_main.R")
+source("predictive/flight_utils.R")
+source("predictive/hotel_utils.R")
+source("predictive/living_utils.R")
+source("R/utils.R")
+source("R/ui.R")
+source("R/server.R")
 
 shinyApp(
-  ui = ui_main(),
-  server = server_main
+  ui = ui(),
+  server = server
 )

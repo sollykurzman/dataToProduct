@@ -1,13 +1,13 @@
 
-ui_main <- function() {
+ui <- function() {
   fluidPage(
     useShinyjs(),
     tags$script(HTML("
     $(document).on('click', '#close_sidebar_icon', function() {
       
       // 1. Toggle the class
-      $('#sidebar').toggleClass('closed');
-      $('#map_container').toggleClass('sidebar');
+      $('#sidebar').removeClass('closed');
+      $('#map_container').removeClass('sidebar');
       
       // 2. Notify Shiny (Optional, keep if you have server logic)
       Shiny.setInputValue('sidebar_clicked', new Date().getTime());
@@ -16,10 +16,10 @@ ui_main <- function() {
     $(document).on('click', '#close_statbar_icon', function() {
       
       // 1. Toggle the class
-      $('#statbar').toggleClass('closed');
+      $('#statbar').addClass('closed');
       $('#statbar').removeClass('maximised');
       $('#map_container').removeClass('compressed');
-      $('#map_container').toggleClass('statbar');
+      $('#map_container').removeClass('statbar');
       
       // 2. Notify Shiny (Optional, keep if you have server logic)
       Shiny.setInputValue('statbar_clicked', new Date().getTime());
@@ -28,11 +28,21 @@ ui_main <- function() {
     $(document).on('click', '#maximise_statbar_icon', function() {
       
       // 1. Toggle the class
-      $('#statbar').toggleClass('maximised');
-      $('#map_container').toggleClass('compressed');
+      $('#statbar').addClass('maximised');
+      $('#map_container').addClass('compressed');
       
       // 2. Notify Shiny (Optional, keep if you have server logic)
       Shiny.setInputValue('maximise_statbar_clicked', new Date().getTime());
+    });
+
+    $(document).on('click', '#minimise_statbar_icon', function() {
+      
+      // 1. Toggle the class
+      $('#statbar').removeClass('maximised');
+      $('#map_container').removeClass('compressed');
+      
+      // 2. Notify Shiny (Optional, keep if you have server logic)
+      Shiny.setInputValue('minimise_statbar_clicked', new Date().getTime());
     });
 
     $(document).on('click', '#map_open', function() {
@@ -57,6 +67,8 @@ ui_main <- function() {
       $('#sb_country').text(data.country);
       $('#sb_total').text('£' + data.total_cost);
       $('#sb_duration').text('(' + data.duration + ' days)');
+      $('#introtext').text(data.wiki_intro);
+      $('#sb_verdict').text(data.verdict);
       
       // Update Image (Reset display in case it was hidden by error previously)
       $('#sb_img').attr('src', 'statbar_images/' + data.city + '.png').css('display', 'block');
@@ -90,7 +102,7 @@ ui_main <- function() {
           div(id="search_filters",
             div(id = "search_bar", class = "filter-section",
               img(src="icons/airplane_departure.svg", id="airport_selection_icon"),
-              selectizeInput(inputId = "departure_airport", label = NULL, choices = NULL, selected = NULL, multiple = FALSE, options = list(placeholder = "Type to search..."))
+              selectizeInput(inputId = "departure_airport", label = NULL, choices = NULL, selected = NULL, multiple = FALSE, options = list(placeholder = "Enter Departure Airport..."))
             ),
 
             # h3("Select Dates"),
@@ -188,64 +200,90 @@ ui_main <- function() {
         # We keep the structure but add IDs to the elements we want to change
         tagList(
           tags$img(id="sb_img", src="", class="statbar-image", onerror="this.style.display='none'"),
-          
+          div(id="sb_verdict"),
           div(class = "container",
-              div(class = "contents",
-                  div(class = "sticky-header",
-                      div(class = "statbar-header",
-                          h1(id="sb_city", "City"), # Placeholder text
-                          div(id="sb_total", class = "total-price", "£0")
-                      ),
-                      div(class = "statbar-info",
-                          h2(id="sb_country", "Country"),
-                          div(id="sb_duration", class = "duration", "(0 days)")
-                      )
+            
+            div(id="stickyspacer"), # Spacer to allow for sticky header
+            div(class = "sticky-header",
+                div(class = "statbar-header",
+                    h1(id="sb_city", "City"), # Placeholder text
+                    div(id="sb_total", class = "total-price", "£0")
+                ),
+                div(class = "statbar-info",
+                    h2(id="sb_country", "Country"),
+                    div(id="sb_duration", class = "duration", "(0 days)")
+                )
+            ),
+              
+            div(id = "cost_breakdown",
+              # Flight Row
+              div(class = "breakdown-row",
+                  div(class = "segment-type", "Flight"),
+                  div(class = "breakdown-container",
+                      div(id="width_flight", class = "cost-bar-segment flight", style = "width: 0%")
                   ),
-                  
-                  # Flight Row
-                  div(class = "breakdown-row",
-                      div(class = "segment-type", "Flight"),
-                      div(class = "breakdown-container",
-                          div(id="width_flight", class = "cost-bar-segment flight", style = "width: 0%")
-                      ),
-                      div(id="val_flight", class = "segment-price", "£0")
+                  div(id="val_flight", class = "segment-price", "£0")
+              ),
+              
+              # Hotel Row
+              div(class = "breakdown-row",
+                  div(class = "segment-type", "Hotel"),
+                  div(class = "breakdown-container",
+                      div(id="width_hotel", class = "cost-bar-segment hotel", style = "width: 0%")
                   ),
-                  
-                  # Hotel Row
-                  div(class = "breakdown-row",
-                      div(class = "segment-type", "Hotel"),
-                      div(class = "breakdown-container",
-                          div(id="width_hotel", class = "cost-bar-segment hotel", style = "width: 0%")
-                      ),
-                      div(id="val_hotel", class = "segment-price", "£0")
+                  div(id="val_hotel", class = "segment-price", "£0")
+              ),
+              
+              # Living Row
+              div(class = "breakdown-row",
+                  div(class = "segment-type", "Living"),
+                  div(class = "breakdown-container",
+                      div(id="width_living", class = "cost-bar-segment living", style = "width: 0%")
                   ),
-                  
-                  # Living Row
-                  div(class = "breakdown-row",
-                      div(class = "segment-type", "Living"),
-                      div(class = "breakdown-container",
-                          div(id="width_living", class = "cost-bar-segment living", style = "width: 0%")
-                      ),
-                      div(id="val_living", class = "segment-price", "£0")
-                  ),
-
-                  # Keep the plots here
-                  h2(class="graphtitles", id="departure_plot_title", "Departure price fluctuations"),
-                  plotlyOutput("departure_plot", height = "200px"),
-                  h2(class="graphtitles", id="return_plot_title", "Return price fluctuations"),
-                  plotlyOutput("return_plot", height = "200px"),
-                  h2(class="graphtitles", id="cfd_plot_title", "Price Probability (Simulation)"),
-                  plotlyOutput("cfd_plot", height = "200px"),
-                  h2(class="graphtitles", id="season_plot_title", "Seasonality (Cheapest Months)"),
-                  plotlyOutput("season_plot", height = "200px"),
-                  h2(class="graphtitles", id="weekday_plot_title", "Best Day to Fly"),
-                  plotlyOutput("weekday_plot", height = "200px")
+                  div(id="val_living", class = "segment-price", "£0")
               )
+            ),
+
+            div(id="introtext"),
+
+            div(id = "statbar_plots",
+              # Keep the plots here
+              div(class="plot",
+                h2(class="graphtitles", id="departure_plot_title", "Departure price fluctuations"),
+                plotlyOutput("departure_plot", height = "200px"),
+              ),
+              div(class="plot",
+                h2(class="graphtitles", id="return_plot_title", "Return price fluctuations"),
+                plotlyOutput("return_plot", height = "200px"),
+              ),
+              div(class="plot",
+                h2(class="graphtitles", id="cfd_plot_title", "Price Probability"),
+                plotlyOutput("cfd_plot", height = "200px"),
+              ),
+              div(class="plot",
+                h2(class="graphtitles", id="season_plot_title", "Seasonality (Cheapest Months)"),
+                plotlyOutput("season_plot", height = "200px"),
+              ),
+              div(class="plot",
+                h2(class="graphtitles", id="weekday_plot_title", "Best Day to Fly"),
+                plotlyOutput("weekday_plot", height = "200px")
+              ),
+              div(class="plot",
+                h2(class="graphtitles", "Living Cost Breakdown"),
+                plotlyOutput("living_breakdown_plot", height = "200px"),
+              )
+            )
           )
         ),
         
         img(src="icons/close.svg", id="close_statbar_icon"),
-        img(src="icons/chevron_right.svg", id="maximise_statbar_icon")
+        div(id="maximise_statbar_icon",
+          img(src="icons/maximise.svg"),
+        ),
+        div(id="minimise_statbar_icon",
+          img(src="icons/minimise.svg"),
+        )
+        
       )
     )
   )

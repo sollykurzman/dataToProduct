@@ -1,7 +1,7 @@
 # Source logic if not using global.R
 # source("R/utils_logic.R") 
 
-server_main <- function(input, output, session) {
+server <- function(input, output, session) {
 
   # --- 1. State Management ---
   rv <- reactiveValues(
@@ -22,7 +22,7 @@ server_main <- function(input, output, session) {
   updateSelectizeInput(session, "departure_airport",
     choices = airport_choices,
     selected = character(0),
-    options = list(placeholder = "Type to search...")
+    options = list(placeholder = "Enter Departure Airport...")
   )
 
   #ON DEPLOYMENT REMOVE FROM HERE 
@@ -129,6 +129,8 @@ server_main <- function(input, output, session) {
     req(selected_destination())
     city_data <- selected_destination()
 
+    wiki_description <- get_wiki_intro(city_data$city)
+
     # 1. Calculate Percentages
     total <- city_data$total_cost
     f_pct <- round((city_data$flight_cost / total) * 100, 1)
@@ -142,38 +144,60 @@ server_main <- function(input, output, session) {
     h_scaled <- round((h_pct / row_max) * 100, 1)
     l_scaled <- round((l_pct / row_max) * 100, 1)
 
+    cdf_func <- get_flight_cdf(
+      origin = rv$departure_code, 
+      dest = city_data$code, 
+      trip_date = rv$departure_date
+    )
+    percentile <- cdf_func(city_data$flight_cost)
+    verdict_text <- case_when(
+      percentile < 0.2 ~ "Great Deal! 💎",       # Bottom 20%
+      percentile < 0.4 ~ "Good Price",           # 20% - 40%
+      percentile < 0.6 ~ "Average Price",        # 40% - 60%
+      percentile < 0.8 ~ "High Price",           # 60% - 80%
+      TRUE             ~ "Very Expensive 💸"     # Top 20%
+    )
+
     # 2. Send ONLY the HTML data to JS
     session$sendCustomMessage("update_statbar", list(
       city = city_data$city,
       country = city_data$country,
-      total_cost = city_data$total_cost,
+      total_cost = sprintf("%.2f", round(city_data$total_cost, 2)),
       duration = rv$trip_duration,
-      flight_cost = city_data$flight_cost,
-      hotel_cost = city_data$hotel_cost,
-      living_cost = city_data$living_cost,
+      flight_cost = sprintf("%.2f", round(city_data$flight_cost, 2)),
+      hotel_cost = sprintf("%.2f", round(city_data$hotel_cost, 2)),
+      living_cost = sprintf("%.2f", round(city_data$living_cost, 2)),
       flight_pct = f_scaled*0.9,
       hotel_pct = h_scaled*0.9,
-      living_pct = l_scaled*0.9
+      living_pct = l_scaled*0.9,
+      wiki_intro = wiki_description,
+      verdict = verdict_text
     ))
     
     # NOTE: We do NOT touch the graphs here.
   })
 
+  # --- 1. Return Price Plot ---
   output$return_plot <- plotly::renderPlotly({
-    req(selected_destination())
-    city_data <- selected_destination()
-    
+    # Explicitly depend on the selection
+    city_data <- selected_destination() 
+    req(city_data) # Stop if nothing is selected
+
+    # Recalculate prices for the NEW city
     prices <- get_prices_around(rv$departure_code, city_data, rv$departure_date, rv$return_date)
     
     # Highlight logic
     bar_colors <- rep("#D3E4FA", length(prices$return_prices)) 
     bar_colors[which.min(prices$return_prices)] <- "#5B97EC"
     
+    hover_text <- sprintf("£%.2f", prices$return_prices)
+    
     plotly::plot_ly(
       x = format(as.Date(prices$return_window), "%d %b"),
       y = prices$return_prices,
+      text = hover_text,
       type = "bar",
-      hovertemplate = "<b>%{x}</b><br>Diff: %{y}<extra></extra>",
+      hovertemplate = "<b>%{x}</b><br>Diff: %{text}<extra></extra>",
       marker = list(color = bar_colors, line = list(width = 0), cornerradius = 5)
     ) %>%
       plotly::layout(
@@ -181,26 +205,34 @@ server_main <- function(input, output, session) {
         plot_bgcolor  = "rgba(0,0,0,0)",
         font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
         xaxis = list(title = "", fixedrange = TRUE, showgrid = FALSE, zeroline = FALSE),
-        yaxis = list(title = "", fixedrange = TRUE, showgrid = TRUE, gridcolor = "#f7f7f7", zeroline = FALSE, tickprefix = "£"),
+        yaxis = list(
+          title = "", fixedrange = TRUE, showgrid = TRUE, 
+          gridcolor = "#f7f7f7", zeroline = TRUE, zerolinecolor = "#333333", 
+          zerolinewidth = 1.5, tickprefix = "£"
+        ),
         margin = list(l = 35, r = 0, t = 10, b = 20)
       ) %>%
       plotly::config(displayModeBar = FALSE)
   })
 
+  # --- 2. Departure Price Plot ---
   output$departure_plot <- plotly::renderPlotly({
-    req(selected_destination())
     city_data <- selected_destination()
+    req(city_data)
     
     prices <- get_prices_around(rv$departure_code, city_data, rv$departure_date, rv$return_date)
     
     bar_colors <- rep("#D3E4FA", length(prices$departure_prices)) 
     bar_colors[which.min(prices$departure_prices)] <- "#5B97EC"
     
+    hover_text <- sprintf("£%.2f", prices$departure_prices)
+    
     plotly::plot_ly(
       x = format(as.Date(prices$departure_window), "%d %b"),
       y = prices$departure_prices,
+      text = hover_text,
       type = "bar",
-      hovertemplate = "<b>%{x}</b><br>Diff: %{y}<extra></extra>",
+      hovertemplate = "<b>%{x}</b><br>Diff: %{text}<extra></extra>",
       marker = list(color = bar_colors, line = list(width = 0), cornerradius = 5)
     ) %>%
       plotly::layout(
@@ -208,51 +240,281 @@ server_main <- function(input, output, session) {
         plot_bgcolor  = "rgba(0,0,0,0)",
         font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
         xaxis = list(title = "", fixedrange = TRUE, showgrid = FALSE, zeroline = FALSE),
-        yaxis = list(title = "", fixedrange = TRUE, showgrid = TRUE, gridcolor = "#f7f7f7", zeroline = FALSE, tickprefix = "£"),
+        yaxis = list(
+          title = "", fixedrange = TRUE, showgrid = TRUE, 
+          gridcolor = "#f7f7f7", zeroline = TRUE, zerolinecolor = "#333333", 
+          zerolinewidth = 1.5, tickprefix = "£"
+        ),
         margin = list(l = 35, r = 0, t = 10, b = 20)
       ) %>%
       plotly::config(displayModeBar = FALSE)
   })
 
+  # --- 3. CDF (S-Curve) Plot ---
   output$cfd_plot <- plotly::renderPlotly({
-    req(selected_destination())
     city_data <- selected_destination()
+    req(city_data)
+
+    # print(paste0("Generating CDF for ", city_data$city))
     
-    # 1. Get the full prediction object (including cfd_data)
-    # We use the specific departure date chosen by the user
-    pred_result <- get_flight_prediction(
+    # Re-run prediction for the NEW city
+    cdf_function <- get_flight_cdf(
       origin = rv$departure_code, 
       dest = city_data$code, 
       trip_date = rv$departure_date
     )
+
+    price <- get_flight_prediction(
+      origin = rv$departure_code, 
+      dest = city_data$code, 
+      trip_date = rv$departure_date
+    )
+
+    # print(paste0("Predicted price: ", price))
     
-    # 2. Extract the simulation data
-    sim_data <- pred_result$cfd_data # Dataframe with column 'Price'
-    current_price <- pred_result$price
+    req(is.function(cdf_function), !is.na(price))
     
-    # 3. Create the Histogram
-    plotly::plot_ly(x = sim_data$Price, type = "histogram", 
-            marker = list(color = "#D3E4FA", line = list(color = "white", width = 1))) %>%
-      
-      # Add a vertical line for the "Current Price"
-      plotly::add_segments(x = current_price, xend = current_price, 
-                   y = 0, yend = 500, # arbitrary high number for height
-                   line = list(color = "#5B97EC", width = 3, dash = "dash"),
-                   name = "Est. Price") %>%
-      
+    sorted_prices <- knots(cdf_function)
+    probs <- cdf_function(sorted_prices)
+    current_price <- price
+    
+    # Dynamic Axis Scaling
+    x_limit <- as.numeric(quantile(sorted_prices, 0.99))
+    x_max <- max(x_limit, current_price * 1.1)
+
+    plotly::plot_ly() %>%
+      plotly::add_lines(
+        x = sorted_prices,
+        y = probs,
+        name = "CDF",
+        line = list(color = "#888", width = 3),
+        hovertemplate = "<b>Price: £%{x:.2f}</b><br>Chance: %{y:.1%}<extra></extra>"
+      ) %>%
+      plotly::add_segments(
+        x = current_price, xend = current_price, 
+        y = 0, yend = 1,
+        line = list(color = "#5B97EC", width = 2, dash = "dash"),
+        name = "Est. Price"
+      ) %>%
       plotly::layout(
         title = "",
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor  = "rgba(0,0,0,0)",
         font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
-        xaxis = list(title = "Predicted Price Range", showgrid = FALSE),
-        yaxis = list(title = "Probability", showgrid = TRUE, gridcolor = "#f7f7f7", showticklabels = FALSE),
-        margin = list(l = 35, r = 10, t = 10, b = 30),
-        showlegend = FALSE,
-        bargap = 0.1
+        xaxis = list(title = "Predicted Price (£)", showgrid = FALSE, zeroline = FALSE, range = c(0, x_max)),
+        yaxis = list(title = "CDF(x)", showgrid = TRUE, gridcolor = "#eee", zeroline = FALSE, range = c(0, 1.05), tickformat = ".0%"),
+        margin = list(l = 50, r = 20, t = 10, b = 40),
+        showlegend = FALSE
       ) %>%
       plotly::config(displayModeBar = FALSE)
   })
+
+  # --- Living Cost Breakdown Plot (Pie Chart) ---
+  output$living_breakdown_plot <- plotly::renderPlotly({
+    req(selected_destination())
+    city_data <- selected_destination()
+    
+    # 1. Fetch detailed living cost data for this specific city
+    # We recall the utility function to get the 'breakdown' list
+    living_details <- get_total_living_cost(
+      shortcode = city_data$code,
+      arrival_date = rv$departure_date,
+      leaving_date = rv$return_date
+    )
+    
+    # 2. Prepare Data for Plotting
+    # Convert the named list (food, drink, etc.) into a data frame
+    bd <- living_details$breakdown
+    plot_data <- data.frame(
+      Category = c("Food", "Drinks", "Transport", "Activities"),
+      Cost = c(bd$food, bd$drink, bd$transport, bd$activities)
+    )
+    
+    # 3. Create Pie Chart
+    plotly::plot_ly(plot_data, labels = ~Category, values = ~Cost, type = 'pie',
+            textposition = 'inside',
+            textinfo = 'label+percent',
+            insidetextorientation = 'radial',
+            marker = list(colors = c("#4299e1", "#9f7aea", "#48bb78", "#ed8936"), # Custom colors to match your theme
+                          line = list(color = '#FFFFFF', width = 1))) %>%
+      plotly::layout(
+        title = "",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor  = "rgba(0,0,0,0)",
+        font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
+        margin = list(l = 20, r = 20, t = 20, b = 20),
+        showlegend = FALSE
+      ) %>%
+      plotly::config(displayModeBar = FALSE)
+  })
+
+  # output$return_plot <- plotly::renderPlotly({
+  #   req(selected_destination())
+  #   city_data <- selected_destination()
+    
+  #   prices <- get_prices_around(rv$departure_code, city_data, rv$departure_date, rv$return_date)
+    
+  #   # Highlight logic
+  #   bar_colors <- rep("#D3E4FA", length(prices$return_prices)) 
+  #   bar_colors[which.min(prices$return_prices)] <- "#5B97EC"
+    
+  #   # Pre-format text for the hover tooltip (so we don't break the y-axis math)
+  #   hover_text <- sprintf("£%.2f", prices$return_prices)
+    
+  #   plotly::plot_ly(
+  #     x = format(as.Date(prices$return_window), "%d %b"),
+  #     y = prices$return_prices, # <--- FIX: Keep this NUMERIC
+  #     text = hover_text,        # <--- FIX: Pass text separately
+  #     type = "bar",
+  #     # Update hovertemplate to use the custom text
+  #     hovertemplate = "<b>%{x}</b><br>Diff: %{text}<extra></extra>",
+  #     marker = list(color = bar_colors, line = list(width = 0), cornerradius = 5)
+  #   ) %>%
+  #     plotly::layout(
+  #       paper_bgcolor = "rgba(0,0,0,0)",
+  #       plot_bgcolor  = "rgba(0,0,0,0)",
+  #       font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
+  #       xaxis = list(title = "", fixedrange = TRUE, showgrid = FALSE, zeroline = FALSE),
+  #       yaxis = list(
+  #         title = "", 
+  #         fixedrange = TRUE, 
+  #         showgrid = TRUE, 
+  #         gridcolor = "#f7f7f7", 
+          
+  #         # --- FIX: explicitly draw the zero line ---
+  #         zeroline = TRUE, 
+  #         zerolinecolor = "#333333", 
+  #         zerolinewidth = 1.5,
+          
+  #         tickprefix = "£"
+  #       ),
+  #       margin = list(l = 35, r = 0, t = 10, b = 20)
+  #     ) %>%
+  #     plotly::config(displayModeBar = FALSE)
+  # })
+
+  # output$departure_plot <- plotly::renderPlotly({
+  #   req(selected_destination())
+  #   city_data <- selected_destination()
+    
+  #   prices <- get_prices_around(rv$departure_code, city_data, rv$departure_date, rv$return_date)
+    
+  #   bar_colors <- rep("#D3E4FA", length(prices$departure_prices)) 
+  #   bar_colors[which.min(prices$departure_prices)] <- "#5B97EC"
+    
+  #   # Pre-format text
+  #   hover_text <- sprintf("£%.2f", prices$departure_prices)
+    
+  #   plotly::plot_ly(
+  #     x = format(as.Date(prices$departure_window), "%d %b"),
+  #     y = prices$departure_prices, # <--- FIX: Keep this NUMERIC
+  #     text = hover_text,           # <--- FIX: Pass text separately
+  #     type = "bar",
+  #     hovertemplate = "<b>%{x}</b><br>Diff: %{text}<extra></extra>",
+  #     marker = list(color = bar_colors, line = list(width = 0), cornerradius = 5)
+  #   ) %>%
+  #     plotly::layout(
+  #       paper_bgcolor = "rgba(0,0,0,0)",
+  #       plot_bgcolor  = "rgba(0,0,0,0)",
+  #       font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
+  #       xaxis = list(title = "", fixedrange = TRUE, showgrid = FALSE, zeroline = FALSE),
+  #       yaxis = list(
+  #         title = "", 
+  #         fixedrange = TRUE, 
+  #         showgrid = TRUE, 
+  #         gridcolor = "#f7f7f7", 
+          
+  #         # --- FIX: explicitly draw the zero line ---
+  #         zeroline = TRUE, 
+  #         zerolinecolor = "#333333", 
+  #         zerolinewidth = 1.5,
+          
+  #         tickprefix = "£"
+  #       ),
+  #       margin = list(l = 35, r = 0, t = 10, b = 20)
+  #     ) %>%
+  #     plotly::config(displayModeBar = FALSE)
+  # })
+
+  # # --- Render the CDF (S-Curve) Plot ---
+  # output$cfd_plot <- plotly::renderPlotly({
+  #   req(selected_destination())
+  #   city_data <- selected_destination()
+    
+  #   # 1. Get Prediction Data
+  #   cdf_function <- get_flight_cdf(
+  #     origin = rv$departure_code, 
+  #     dest = city_data$code, 
+  #     trip_date = rv$departure_date
+  #   )
+
+  #   price <- get_flight_prediction(
+  #     origin = rv$departure_code, 
+  #     dest = city_data$code, 
+  #     trip_date = rv$departure_date
+  #   )
+    
+  #   req(is.function(cdf_function), !is.na(price))
+    
+  #   # 2. Process Data
+  #   sorted_prices <- knots(cdf_function)
+  #   probs <- cdf_function(sorted_prices)
+  #   current_price <- price
+    
+  #   # --- FIX: Calculate Axis Limits ---
+  #   # We grab the 99th percentile. This cuts off the top 1% of extreme 
+  #   # expensive outliers so the curve fills the chart nicely.
+  #   x_limit <- as.numeric(quantile(sorted_prices, 0.99))
+    
+  #   # Optional: Ensure the current price is definitely included in the view
+  #   x_max <- max(x_limit, current_price * 1.1)
+
+  #   # 3. Create the S-Curve Plot
+  #   plotly::plot_ly() %>%
+      
+  #     plotly::add_lines(
+  #       x = sorted_prices,
+  #       y = probs,
+  #       name = "CDF",
+  #       line = list(color = "#888", width = 3),
+  #       hovertemplate = "<b>Price: £%{x:.2f}</b><br>Chance: %{y:.1%}<extra></extra>"
+  #     ) %>%
+      
+  #     plotly::add_segments(
+  #       x = current_price, xend = current_price, 
+  #       y = 0, yend = 1,
+  #       line = list(color = "#5B97EC", width = 2, dash = "dash"),
+  #       name = "Est. Price"
+  #     ) %>%
+      
+  #     plotly::layout(
+  #       title = "",
+  #       paper_bgcolor = "rgba(0,0,0,0)",
+  #       plot_bgcolor  = "rgba(0,0,0,0)",
+  #       font = list(family = "'Helvetica Neue', Helvetica, Arial, sans-serif", size = 11, color = "#888"),
+        
+  #       # --- FIX: Apply the Range Limit ---
+  #       xaxis = list(
+  #         title = "Predicted Price (£)", 
+  #         showgrid = FALSE,
+  #         zeroline = FALSE,
+  #         range = c(0, x_max) # <--- This forces the zoom
+  #       ),
+        
+  #       yaxis = list(
+  #         title = "CDF(x)", 
+  #         showgrid = TRUE, 
+  #         gridcolor = "#eee", 
+  #         zeroline = FALSE,
+  #         range = c(0, 1.05), 
+  #         tickformat = ".0%"
+  #       ),
+        
+  #       margin = list(l = 50, r = 20, t = 10, b = 40),
+  #       showlegend = FALSE
+  #     ) %>%
+  #     plotly::config(displayModeBar = FALSE)
+  # })
 
   # --- Render Trend Plots ---
   
@@ -378,7 +640,7 @@ server_main <- function(input, output, session) {
     costs         <- get_trip_costs(input$departure_airport, connections, input$departure_date, input$return_date)
     filtered_data <- filter_cities_by_budget(input$budget, costs)
 
-    print(head(filtered_data))
+    # print(head(filtered_data))
 
     # C. Update Global State
     rv$destinations   <- filtered_data
@@ -387,9 +649,6 @@ server_main <- function(input, output, session) {
     rv$departure_date <- input$departure_date
     rv$return_date    <- input$return_date
     selected_destination(NULL) # Reset selection on new search
-
-    shinyjs::addClass(id = "statbar", class = "closed")
-    shinyjs::removeClass(id = "map_container", class = "statbar")
 
     # D. Prepare Map Visuals
     map <- leafletProxy("map") %>% clearMarkers() %>% clearShapes()
@@ -437,6 +696,10 @@ server_main <- function(input, output, session) {
     # Open Sidebar
     shinyjs::removeClass(id = "sidebar", class = "closed")
     shinyjs::addClass(id = "map_container", class = "sidebar")
+    shinyjs::removeClass(id = "statbar", class = "maximised")
+    shinyjs::addClass(id = "statbar", class = "closed")
+    shinyjs::removeClass(id = "map_container", class = "statbar")
+    shinyjs::removeClass(id = "map_container", class = "compressed")
 
     # Trigger CSS Animation
     shinyjs::delay(100, shinyjs::runjs("

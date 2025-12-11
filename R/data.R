@@ -1,4 +1,3 @@
-library(dplyr)
 
 locations <- read.csv("data/locations.csv", stringsAsFactors = FALSE)
 names(locations) <- c("city", "code", "country", "lat", "lon")

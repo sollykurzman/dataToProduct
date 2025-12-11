@@ -4,7 +4,7 @@
 :root {
   --maincolor: #5B97EC;
   --menubarheight: 80px;
-  --sidebarwidth: 325px;
+  --sidebarwidth: 300px;
   --statbarwidth: 300px;
   --sidebarpadding: 20px;
   --sidebartop: 30px;
@@ -216,8 +216,7 @@ a:hover {
 #map_container {
   position: fixed !important;
   top: calc(var(--menubarheight) + 20px);
-  /* left: 80px; */
-  right: 20px;
+  left: 80px;
   width: calc(100vw - 100px) !important;
   height: calc(100vh - var(--menubarheight) - 40px) !important;
   z-index: 1;
@@ -229,7 +228,7 @@ a:hover {
 
 #map_container.sidebar {
   width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding)) !important;
-  /* left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px); */
+  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   transition: 1.0s ease;
 }
 
@@ -239,19 +238,19 @@ a:hover {
 }
 
 #map_container.sidebar.statbar {
-  /* left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px); */
+  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding)) !important;
   transition: 1.0s ease;
 }
 
 #map_container.statbar.compressed {
-  /* left: 80px; */
+  left: 80px;
   width: 40px !important;
   transition: 1.0s ease;
 }
 
 #map_container.sidebar.statbar.compressed {
-  /* left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px); */
+  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   width: 40px !important;
   transition: 1.0s ease;
 }
@@ -296,9 +295,7 @@ a:hover {
   border-radius: 10px;
   z-index: 1001;
   overflow-y: hidden;
-  overflow-x: hidden;
   transition: 1s ease;
-  padding-right: 25px;
 }
 
 #sidebar.closed {
@@ -316,7 +313,7 @@ a:hover {
 .sidebar-header-container .shiny-input-select {
   position: absolute;
   top: 15px;
-  right: 25px;
+  right: 0px;
   z-index: 11;
   transition: 0.5s ease;
   opacity: 1;
@@ -401,13 +398,12 @@ a:hover {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  /* transform: rotate(45deg) translate(2px, 0); */
+  transform: rotate(45deg) translate(2px, 0);
   width: 20px;
   height: 20px;
   z-index: 1001;
   overflow-y: none;
   transition: 1s ease;
-  margin-bottom: calc((100vh - var(--menubarheight) - 40px) / 2 - 20px);
 }
 
 #sidebar.closed #close_sidebar_icon {
@@ -551,30 +547,21 @@ a:hover {
 #statbar {
   position: fixed;
   top: calc(var(--menubarheight) + 20px);
-  left: calc(var(--sidebarpadding) + var(--sidebarwidth) + 20px);
+  right: var(--sidebarpadding);
   width: var(--statbarwidth);
   height: calc(100vh - var(--menubarheight) - 40px);
   background-color: white;
   border-radius: 10px;
-  z-index: 999;
+  z-index: 1001;
   overflow-y: hidden;
   transition: 1s ease;
 }
 
-
 #statbar.closed {
   position: fixed;
   top: calc(var(--menubarheight) + 20px);
-  left: var(--sidebarpadding);
-  width: 40px;
-  /* left: calc(var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding)); */
+  right: calc(var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding));
 }
-
-body:has(#sidebar.closed) #statbar:not(.closed) {
-    /* special styling */
-    left: calc(var(--sidebarpadding) + 60px);
-}
-
 
 body:has(#sidebar.closed) #statbar.maximised {
     /* special styling */
@@ -592,7 +579,7 @@ body:has(#sidebar.closed) #statbar.maximised {
 #close_statbar_icon {
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
   transform:  translate(2px, 0) rotate(180deg);
   background-color: white;
   /* padding: 20px; */
@@ -607,43 +594,20 @@ body:has(#sidebar.closed) #statbar.maximised {
   transition: 1s ease;
 }
 
-
-#maximise_statbar_icon,
-#minimise_statbar_icon {
+#maximise_statbar_icon {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 30px;
-  height: 30px;
-  background-color: white;
-  border-radius: 15px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1005;
+  bottom: 10px;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  z-index: 1001;
+  overflow-y: none;
   transition: 1s ease;
 }
 
-#maximise_statbar_icon img, #minimise_statbar_icon img {
-  width: 18px;
-  height: 18px;
-}
-
 #statbar.maximised #maximise_statbar_icon {
-  display: none !important;
-}
-
-#minimise_statbar_icon {
-  display: none;
-}
-
-#statbar.maximised #minimise_statbar_icon {
-  display: flex !important;
-}
-/* #statbar.maximised #maximise_statbar_icon {
   transform: rotate(180deg) translate(-2px, 0);
-} */
+}
 /* 
 #statbar.closed #close_statbar_icon {
   transform: rotate(-90deg) translate(-2px, 0);
@@ -664,12 +628,7 @@ body:has(#sidebar.closed) #statbar.maximised {
   background-color: white;
   width: var(--statbarwidth) !important;
   position: absolute;
-  left: 0px;
-}
-
-#stickyspacer {
-  height: calc(var(--statbarwidth) * 2/5) !important;
-  width: var(--statbarwidth) !important;
+  right: 0px;
 }
 
 #statbar_info {
@@ -681,91 +640,23 @@ body:has(#sidebar.closed) #statbar.maximised {
 #statbar .statbar-image {
   width: var(--statbarwidth) !important;
   position: absolute;
-  left: 0px;
+  right: 0px;
   top: 0px;
   z-index: 1;
   transition: 0.5s ease;
 }
 
-#statbar.maximised .container {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-#statbar.maximised .contents {
-  width: 100% !important;
-  background-color: blue;
-}
-/* 
 #statbar.maximised .statbar-image {
-  border-radius: 0px 0px 10px 0px;
-} */
+  border-radius: 0px 0px 0px 10px;
+}
 
 .sticky-header {
-  width: var(--statbarwidth);
   position: sticky;
   position: -webkit-sticky;
   top: 0;
   background-color: white;
   z-index: 10;
   padding: 10px 0px;
-}
-/* 
-#statbar.maximised .sticky-header {
-  position: absolute;
-  left: calc(var(--statbarwidth) + 20px) !important;
-  top: calc(var(--statbarwidth) * -2/5) !important;
-  transform: translate(0, calc(var(--statbarwidth) * 0.5/5));
-} */
-
-#cost_breakdown {
-  width: var(--statbarwidth);
-  background-color: white;
-  padding-top: 5px;
-}
-/* 
-#statbar.maximised #cost_breakdown {
-  position: absolute;
-  left: calc(var(--statbarwidth) * 2 + 40px) !important;
-  top: calc(var(--statbarwidth) * -2/5) !important;
-  transform: translate(0, calc(var(--statbarwidth) * 0.5/5));
-} */
-
-#statbar_plots {
-  width: var(--statbarwidth);
-  background-color: white;
-  padding-top: 40px;
-}
-
-#statbar.maximised #statbar_plots {
-  position: absolute;
-  left: var(--statbarwidth);
-  top: 0px;
-  width: calc(100% - var(--statbarwidth)) !important;
-  height: 100% !important;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  align-content: space-evenly;
-  background-color: white;
-  /* background-color:rgb(249, 249, 249); */
-  padding-top: 0px;
-}
-
-#statbar.maximised .plot {
-  padding: 10px;
-  background-color: white;
-  border-radius: 10px;
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-}
-
-#statbar .plot div {
-  margin-bottom: 30px;
-}
-
-#statbar.maximised .plot div {
-  margin-bottom: 0px;
 }
 
 .statbar-header {
@@ -812,9 +703,8 @@ body:has(#sidebar.closed) #statbar.maximised {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2px 15px;
-  /* margin: 5px 0px; */
-  /* margin: 0px 0px 10px 0px; */
+  padding: 0px 15px;
+  margin: 5px 0;
 }
 
 .segment-type {
@@ -828,29 +718,6 @@ body:has(#sidebar.closed) #statbar.maximised {
   text-align: right;
   font-size: 0.9rem;
   color: #444;
-}
-
-#introtext {
-  padding: 15px;
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.4;
-  background-color: white;
-  width: var(--statbarwidth) !important;
-}
-
-#sb_verdict {
-  position: absolute;
-  left: 15px;
-  bottom: 15px;
-  width: calc(var(--statbarwidth) - 30px);
-  padding: 10px;
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  color: #333;
-  z-index: 2000;
 }
 
 #statbar .cost-bar-segment {
@@ -876,14 +743,13 @@ body:has(#sidebar.closed) #statbar.maximised {
   font-size: 0.8rem;
   color: #333;
   padding-left: 15px;
-  /* width: 100%; */
+  width: 100%;
   text-align: center;
-  width: var(--statbarwidth) !important;
 }
-/* 
+
 #departure_plot_title {
   margin-top: 40px;
-} */
+}
 
 /* =========================================
    6. VISUAL COMPONENTS: COST BREAKDOWN

@@ -95,7 +95,7 @@ get_route_trends <- function(origin, dest, model = .global_model) {
   ))
 }
 
-path_to_check <- "predictive_models/flights/flight_model.rds"
+path_to_check <- "predictive/flight_model.rds"
 
 if (file.exists(path_to_check)) {
     # Check Project Root
