@@ -701,10 +701,10 @@ body:has(#sidebar.closed) #statbar.maximised {
   justify-content: center;
   margin-left:0px !important;
 }
-
+/* 
 #statbar.maximised .plotly.html-widget {
   transform: translate(30px, 0px);
-}
+} */
 
 /* .plot .plot-container {
   position: absolute;
