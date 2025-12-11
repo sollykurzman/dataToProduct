@@ -1,10 +1,8 @@
-/* =========================================
-   1. GLOBAL VARIABLES & RESETS
-   ========================================= */
+/* GLOBAL */
 :root {
   --maincolor: #5B97EC;
   --menubarheight: 80px;
-  --sidebarwidth: 300px;
+  --sidebarwidth: 325px;
   --statbarwidth: 300px;
   --sidebarpadding: 20px;
   --sidebartop: 30px;
@@ -43,9 +41,7 @@ a:hover {
   overflow: visible;
 }
 
-/* =========================================
-   2. MENU BAR & HEADER
-   ========================================= */
+/* MENU BAR */
 #menu_bar {
   position: fixed;
   top: 0px;
@@ -70,7 +66,7 @@ a:hover {
   margin-bottom: 0px;
 }
 
-/* Header (Logo & Title) */
+/* logo area */
 #header {
   position: absolute;
   left: 20px;
@@ -96,7 +92,7 @@ a:hover {
   color: #464646;
 }
 
-/* Search Filters Section */
+/* filter inputs */
 #search_filters {
   position: absolute;
   top: 50%;
@@ -132,27 +128,27 @@ a:hover {
   gap: 10px;
 }
 
-/* Container for the 3 elements */
+/* budget slider setup */
 #budget_selection {
     display: flex;
     align-items: center;
-    gap: 10px; /* Space between boxes and slider */
-    width: 25% !important; /* Adjust width as needed for your specific navbar */
+    gap: 10px; 
+    width: 25% !important; 
 }
 
-/* The wrapper for the numeric inputs */
+/* manual budget input boxes */
 .budget-input-box {
-    width: 60px; /* Fixed small width */
+    width: 60px; 
 }
 
-/* Hide the up/down spinner arrows in numeric inputs for a cleaner look */
+/* hide spinner arrows */
 .budget-input-box input[type=number]::-webkit-inner-spin-button, 
 .budget-input-box input[type=number]::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
   margin: 0; 
 }
 
-/* Style the actual input text box */
+/* input styling */
 .budget-input-box input {
     height: 30px;
     padding: 5px;
@@ -163,13 +159,13 @@ a:hover {
     background-color: #f9f9f9;
 }
 
-/* The wrapper for the slider to make it flexible */
+/* slider wrapper */
 .budget-slider-container {
-    flex-grow: 1; /* Takes up remaining space */
-    margin-top: -15px; /* Fix vertical alignment slightly */
+    flex-grow: 1; 
+    margin-top: -15px; 
 }
 
-/* Override Shiny's default slider margins to fit the bar */
+/* override shiny defaults */
 .budget-slider-container .shiny-input-container {
     width: 100% !important;
     padding-bottom: 0px !important;
@@ -199,9 +195,7 @@ a:hover {
   z-index: 9999;
 }
 
-/* =========================================
-   3. MAP CONTAINER & DYNAMIC LAYOUT
-   ========================================= */
+/* MAP AREA */
 #map {
   position: absolute !important;
   top: 50%;
@@ -216,7 +210,7 @@ a:hover {
 #map_container {
   position: fixed !important;
   top: calc(var(--menubarheight) + 20px);
-  left: 80px;
+  right: 20px;
   width: calc(100vw - 100px) !important;
   height: calc(100vh - var(--menubarheight) - 40px) !important;
   z-index: 1;
@@ -226,9 +220,9 @@ a:hover {
   overflow: hidden;
 }
 
+/* dynamic resizing based on sidebar states */
 #map_container.sidebar {
   width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding)) !important;
-  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   transition: 1.0s ease;
 }
 
@@ -238,19 +232,16 @@ a:hover {
 }
 
 #map_container.sidebar.statbar {
-  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   width: calc(100vw - var(--sidebarwidth) - 40px - var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding)) !important;
   transition: 1.0s ease;
 }
 
 #map_container.statbar.compressed {
-  left: 80px;
   width: 40px !important;
   transition: 1.0s ease;
 }
 
 #map_container.sidebar.statbar.compressed {
-  left: calc(var(--sidebarwidth) + var(--sidebarpadding) + 20px);
   width: 40px !important;
   transition: 1.0s ease;
 }
@@ -282,9 +273,7 @@ a:hover {
   opacity: 1;
 }
 
-/* =========================================
-   4. SIDEBAR (Left Panel)
-   ========================================= */
+/* SIDEBAR */
 #sidebar {
   position: fixed;
   top: calc(var(--menubarheight) + 20px);
@@ -295,7 +284,9 @@ a:hover {
   border-radius: 10px;
   z-index: 1001;
   overflow-y: hidden;
+  overflow-x: hidden;
   transition: 1s ease;
+  padding-right: 25px;
 }
 
 #sidebar.closed {
@@ -303,7 +294,6 @@ a:hover {
   top: calc(var(--menubarheight) + 20px);
   left: var(--sidebarpadding);
   width: 40px;
-  /* height: 40px; */
   background-color: white;
   border-radius: 10px;
   z-index: 1001;
@@ -313,77 +303,66 @@ a:hover {
 .sidebar-header-container .shiny-input-select {
   position: absolute;
   top: 15px;
-  right: 0px;
+  right: 25px;
   z-index: 11;
   transition: 0.5s ease;
   opacity: 1;
-  /* width: 120px; */
   font-size: 0.7rem;
-  /* height: 20px; */
   background-color: white;
 }
 
-/* 1. Target the Main Input Box (The part you see before clicking) */
+/* removing default shiny borders */
 .sidebar-header-container .selectize-input {
-  background: transparent !important;       /* No white background */
-  border: none !important;                  /* No grey border */
-  box-shadow: none !important;              /* No default shadow or glow */
-  padding: 0px !important;                  /* Remove internal padding */
-  min-height: 0px !important;               /* Allow it to be smaller than default */
+  background: transparent !important;       
+  border: none !important;                  
+  box-shadow: none !important;              
+  padding: 0px !important;                  
+  min-height: 0px !important;               
   height: auto !important;
-  line-height: 1.2 !important;              /* Tighten text height */
-  /* text-align: right !important; */
-  /* padding-right: 20px !important; */
+  line-height: 1.2 !important;              
 }
 
-/* 2. Remove the "Focus" Glow (When you click it) */
 .sidebar-header-container .selectize-input.focus {
   border-color: transparent !important;
   box-shadow: none !important;
 }
 
-/* 3. Remove the "Dropdown Arrow" container styling */
-/* (Selectize adds a gradient/border to the arrow area by default) */
+/* custom arrow for dropdown */
 .sidebar-header-container .selectize-control.single .selectize-input::after {
-  border: none !important;                  /* Remove triangle border tricks */
-  content: " \25BC";                        /* Simple unicode arrow */
+  border: none !important;                  
+  content: " \25BC";                        
   font-size: 10px;
-  right: 0px;                               /* align to far right */
+  right: 0px;                               
   top: 50%;
   transform: translateY(-50%);
-  color: #5B97EC;                           /* Match your app color */
+  color: #5B97EC;                           
 }
 
-/* 4. Fix Alignment of the Text itself */
-/* The 'item' div inside holds the text "Price (Low-High)" */
 .sidebar-header-container .selectize-input .item {
-  padding-right: 15px !important;           /* Make room for the arrow */
+  padding-right: 15px !important;           
   vertical-align: middle !important;
 }
 
 .sidebar-header-container .selectize-input input {
-  caret-color: transparent !important; /* Makes the blinking line invisible */
-  cursor: pointer !important;          /* Shows a hand cursor instead of text bar */
-  font-size: 1px !important;           /* Minimizes the cursor height */
-  color: transparent !important;       /* Ensures no text is seen if typed accidentally */
-  width: 0px !important;               /* Minimizes width (from previous step) */
-  display: none !important;        /* Hides it completely */
+  caret-color: transparent !important; 
+  cursor: pointer !important;          
+  font-size: 1px !important;           
+  color: transparent !important;       
+  width: 0px !important;               
+  display: none !important;        
 }
 
-/* 5. Optional: Style the Dropdown Menu (The part that pops open) */
-/* You usually WANT a shadow here, but here is how to control it */
+/* dropdown menu styling */
 .sidebar-header-container .selectize-dropdown {
   margin-top: 5px !important;
   margin-right: 5px !important;
   border: 1px solid #eee !important;
-  box-shadow: 0px 4px 12px rgba(0,0,0,0.1) !important; /* Keep a soft shadow for the list */
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1) !important; 
   border-radius: 8px !important;
-  /* width: auto !important;                   /* Let it fit the content */
-  /* min-width: 140px !important; */
-  left: auto !important;    /* Stop it from aligning to the left */
-  right: 0px !important;    /* Force it to align to the right edge */
-  width: max-content !important; /* Let it grow as wide as the text needs */
-  min-width: 100% !important;    /* But never smaller than the button */
+  left: auto !important;    
+  right: 0px !important;    
+  width: max-content !important; 
+  min-width: 100% !important;    
 }
 
 #sidebar.closed .sidebar-header-container .shiny-input-select {
@@ -398,12 +377,12 @@ a:hover {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  transform: rotate(45deg) translate(2px, 0);
   width: 20px;
   height: 20px;
   z-index: 1001;
   overflow-y: none;
   transition: 1s ease;
+  margin-bottom: calc((100vh - var(--menubarheight) - 40px) / 2 - 20px);
 }
 
 #sidebar.closed #close_sidebar_icon {
@@ -460,7 +439,7 @@ a:hover {
   z-index: 10;
 }
 
-/* Sidebar Items */
+/* sidebar result items */
 .sidebaritem {
   width: 100%;
   height: 100px;
@@ -509,7 +488,7 @@ a:hover {
   width: 70%;
 }
 
-/* No Results State */
+/* empty state styling */
 .no-results {
   position: absolute;
   top: 50%;
@@ -541,18 +520,16 @@ a:hover {
   left: auto !important;
 }
 
-/* =========================================
-   5. STATBAR (Right Panel)
-   ========================================= */
+/* STATBAR */
 #statbar {
   position: fixed;
   top: calc(var(--menubarheight) + 20px);
-  right: var(--sidebarpadding);
+  left: calc(var(--sidebarpadding) + var(--sidebarwidth) + 20px);
   width: var(--statbarwidth);
   height: calc(100vh - var(--menubarheight) - 40px);
   background-color: white;
   border-radius: 10px;
-  z-index: 1001;
+  z-index: 999;
   overflow-y: hidden;
   transition: 1s ease;
 }
@@ -560,11 +537,15 @@ a:hover {
 #statbar.closed {
   position: fixed;
   top: calc(var(--menubarheight) + 20px);
-  right: calc(var(--sidebarpadding) - var(--statbarwidth) - var(--sidebarpadding));
+  left: var(--sidebarpadding);
+  width: 40px;
+}
+
+body:has(#sidebar.closed) #statbar:not(.closed) {
+    left: calc(var(--sidebarpadding) + 60px);
 }
 
 body:has(#sidebar.closed) #statbar.maximised {
-    /* special styling */
     width: calc(100vw - (var(--sidebarpadding) * 8)) !important;
 }
 
@@ -579,48 +560,58 @@ body:has(#sidebar.closed) #statbar.maximised {
 #close_statbar_icon {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 10px;
   transform:  translate(2px, 0) rotate(180deg);
   background-color: white;
-  /* padding: 20px; */
-  /* outline: 5px solid white; */
   border: 5px solid white;
   box-sizing: border-box;
   border-radius: 15px;
   width: 30px;
   height: 30px;
   z-index: 1005;
-  /* overflow-y: none; */
   transition: 1s ease;
 }
 
-#maximise_statbar_icon {
+#maximise_statbar_icon,
+#minimise_statbar_icon {
   position: absolute;
-  bottom: 10px;
-  left: 10px;
-  width: 20px;
-  height: 20px;
-  z-index: 1001;
-  overflow-y: none;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border-radius: 15px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1005;
   transition: 1s ease;
+}
+
+#maximise_statbar_icon img, #minimise_statbar_icon img {
+  width: 18px;
+  height: 18px;
 }
 
 #statbar.maximised #maximise_statbar_icon {
-  transform: rotate(180deg) translate(-2px, 0);
+  display: none !important;
 }
-/* 
-#statbar.closed #close_statbar_icon {
-  transform: rotate(-90deg) translate(-2px, 0);
-} */
+
+#minimise_statbar_icon {
+  display: none;
+}
+
+#statbar.maximised #minimise_statbar_icon {
+  display: flex !important;
+}
 
 #statbar .container {
   padding: 0 !important;
-  /* padding-top: calc(var(--statbarwidth) * 2/5) !important; */
   overflow-y: scroll !important;
   z-index: 2;
   height: 100% !important;
   box-sizing: border-box;
-  /* background-color: blue; */
 }
 
 #statbar .contents {
@@ -628,7 +619,12 @@ body:has(#sidebar.closed) #statbar.maximised {
   background-color: white;
   width: var(--statbarwidth) !important;
   position: absolute;
-  right: 0px;
+  left: 0px;
+}
+
+#stickyspacer {
+  height: calc(var(--statbarwidth) * 2/5) !important;
+  width: var(--statbarwidth) !important;
 }
 
 #statbar_info {
@@ -640,23 +636,149 @@ body:has(#sidebar.closed) #statbar.maximised {
 #statbar .statbar-image {
   width: var(--statbarwidth) !important;
   position: absolute;
-  right: 0px;
+  left: 0px;
   top: 0px;
   z-index: 1;
   transition: 0.5s ease;
 }
 
-#statbar.maximised .statbar-image {
-  border-radius: 0px 0px 0px 10px;
+#statbar.maximised .container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#statbar.maximised .contents {
+  width: 100% !important;
+  background-color: blue;
 }
 
 .sticky-header {
+  width: var(--statbarwidth);
   position: sticky;
   position: -webkit-sticky;
   top: 0;
   background-color: white;
   z-index: 10;
   padding: 10px 0px;
+}
+
+#cost_breakdown {
+  width: var(--statbarwidth);
+  background-color: white;
+  padding-top: 5px;
+}
+
+#statbar_plots {
+  width: var(--statbarwidth);
+  background-color: white;
+  padding-top: 40px;
+}
+
+#statbar.maximised #statbar_plots {
+  position: absolute;
+  left: var(--statbarwidth);
+  top: 0px;
+  width: calc(100% - var(--statbarwidth)) !important;
+  height: 100% !important;
+  /* display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  align-content: space-evenly; */
+  background-color: white;
+  padding-top: 0px;
+}
+
+.plot {
+  position: relative;
+  height: 250px;           /* Fixed height prevents "stretching" in narrow mode */
+  margin-bottom: 20px;     /* Space between cards in stack */
+  display: flex;
+  flex-direction: column;  /* Stack Title -> Graph -> Text */
+  justify-content: space-between;
+  background-color: white; /* Clean background */
+  border-radius: 10px;     /* Rounded corners */
+  overflow: hidden;        /* Keep content inside */
+}
+
+/* Ensure the graph fills the available space inside the card */
+.plot .js-plotly-plot, 
+.plot .plotly {
+  flex-grow: 1;      /* Grow to fill space */
+  min-height: 0;     /* Allow shrinking if needed */
+  max-height: 100%;
+}
+
+/* --- MAXIMISED STATE (Grid View) --- */
+/* This overrides the base state to create the perfect non-scrolling grid */
+#statbar.maximised #statbar_plots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 Columns */
+  grid-template-rows: repeat(, 1fr);    /* 2 Rows */
+  gap: 15px;                             /* Space between cards */
+  height: calc(100vh - 120px);           /* Fit exactly in viewport */
+  padding: 15px;
+  overflow: hidden;                      /* Disable scrolling */
+  background-color: white;
+  width: 100% !important;                /* Ensure full width */
+  position: absolute;                    /* Lock to container */
+  left: var(--statbarwidth);
+  top: 0;
+}
+
+#statbar.maximised .plot {
+  height: auto;          /* Let the GRID define the height, not fixed pixels */
+  margin-bottom: 0px;    /* Remove stack margin */
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+}
+
+#statbar.maximised .plot {
+  padding: 10px;
+  background-color: white;
+  border-radius: 10px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.plot .shiny-text-output {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  padding: 5px 5px 5px 5px;
+  font-style: italic;
+  line-height: 1.4;
+  /* width: var(--statbarwidth);
+  position: absolute;
+  bottom: 0px; */
+}
+
+/* 4. TEXT DESCRIPTION: Put it back in the flow */
+.plot .shiny-text-output {
+  position: relative; /* Remove 'absolute' so it sits BELOW the graph */
+  width: 100%;
+  font-size: 0.75rem; /* Slightly smaller to save space */
+  color: #666;
+  text-align: center;
+  padding-top: 5px;
+  flex-shrink: 0;     /* Prevent text from getting squashed */
+  line-height: 1.2;
+}
+
+/* 5. TITLES: Prevent them from taking too much space */
+.plot h2 {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+#statbar .plot div {
+  margin-bottom: 30px;
+}
+
+#statbar.maximised .plot div {
+  margin-bottom: 0px;
 }
 
 .statbar-header {
@@ -677,8 +799,6 @@ body:has(#sidebar.closed) #statbar.maximised {
   justify-content: space-between;
   align-items: center;
   padding: 0px 15px;
-  /* margin-top: 2px; */
-  /* margin-bottom: 15px; */
 }
 
 .statbar-info h2 {
@@ -698,13 +818,12 @@ body:has(#sidebar.closed) #statbar.maximised {
   color: #333;
 }
 
-/* Statbar Breakdown Row */
+/* breakdown rows */
 .breakdown-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0px 15px;
-  margin: 5px 0;
+  padding: 2px 15px;
 }
 
 .segment-type {
@@ -720,40 +839,57 @@ body:has(#sidebar.closed) #statbar.maximised {
   color: #444;
 }
 
+#introtext {
+  padding: 15px;
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.4;
+  background-color: white;
+  width: var(--statbarwidth) !important;
+}
+
+#sb_verdict {
+  position: absolute;
+  left: 15px;
+  bottom: 15px;
+  width: calc(var(--statbarwidth) - 30px);
+  padding: 10px;
+  background-color: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  z-index: 2000;
+}
+
 #statbar .cost-bar-segment {
   height: 0.9rem !important;
   border-radius: calc(0.9rem/2);
   transition: 0.1s ease;
 }
 
-/* Optional: Fade effect for text changes */
+/* smooth fade for price text */
 .statbar-header h1, .total-price, .segment-price {
   transition: color 0.3s ease;
 }
 
-#return_plot, #departure_plot {
-  width: calc(100% - 30px) !important; /* Force it to fill the container */
+/* #return_plot, #departure_plot {
+  width: calc(100% - 30px) !important; 
   max-width: 100% !important;
-  margin-bottom: 20px; /* Add spacing between the two plots */
+  margin-bottom: 20px; 
   padding: 0px 15px;
   height: 200px !important;
-}
+} */
 
 .graphtitles {
   font-size: 0.8rem;
   color: #333;
   padding-left: 15px;
-  width: 100%;
   text-align: center;
+  width: var(--statbarwidth) !important;
 }
 
-#departure_plot_title {
-  margin-top: 40px;
-}
-
-/* =========================================
-   6. VISUAL COMPONENTS: COST BREAKDOWN
-   ========================================= */
+/* COST BREAKDOWN BARS */
 .breakdown-section {
   margin-top: 12px;
   margin-bottom: 12px;
@@ -774,34 +910,33 @@ body:has(#sidebar.closed) #statbar.maximised {
   margin: 0 0 0 5%;
 }
 
-/* The Bar Container */
 .cost-bar-container {
   display: flex;
   width: 100%;
   height: 10px;
   background-color: #edf2f7;
   border-radius: 5px;
-  overflow: hidden; /* Ensures corners stay rounded */
+  overflow: hidden; 
 }
 
-/* Individual Segments */
+/* segments */
 .cost-bar-segment {
   height: 100%;
 }
 
 .cost-bar-segment.flight {
   background-color: #4299e1;
-} /* Blue */
+} 
 
 .cost-bar-segment.hotel {
   background-color: #9f7aea;
-} /* Purple */
+} 
 
 .cost-bar-segment.living {
   background-color: #48bb78;
-} /* Green */
+} 
 
-/* The Legend */
+/* legend below bar */
 .cost-legend {
   display: flex;
   justify-content: space-between;
@@ -835,12 +970,9 @@ body:has(#sidebar.closed) #statbar.maximised {
   background-color: #48bb78;
 }
 
-/* =========================================
-   7. MAP INTERNALS, LEAFLET & MARKERS
-   ========================================= */
+/* LEAFLET OVERRIDES */
 .large_marker_area {
   background-color: orange;
-  /* transform: translate(-50%, 0); */
   margin: -10px !important;
 }
 
@@ -866,7 +998,7 @@ body:has(#sidebar.closed) #statbar.maximised {
   pointer-events: none !important;
 }
 
-/* Leaflet Popup Styles */
+/* popup styles */
 .leaflet-popup-content-wrapper {
   border-radius: 8px;
   padding: 0;
@@ -909,11 +1041,11 @@ body:has(#sidebar.closed) #statbar.maximised {
   padding-top: 10px;
   border-top: 1px solid #eee;
   text-align: center;
-  background-color: #fafbfc; /* Slight contrast for price area */
+  background-color: #fafbfc; 
   margin-left: -15px;
   margin-right: -15px;
   margin-bottom: -15px;
-  padding-bottom: 15px; /* Full width background */
+  padding-bottom: 15px; 
   border-radius: 0px 0px 6px 6px;
 }
 
@@ -930,7 +1062,7 @@ body:has(#sidebar.closed) #statbar.maximised {
   font-weight: bold;
 }
 
-/* Flight Path Animation */
+/* flight path animation logic */
 @keyframes drawLine {
   from {
     stroke-dashoffset: 5000;
@@ -943,18 +1075,16 @@ body:has(#sidebar.closed) #statbar.maximised {
 .flight-path-anim {
   stroke-dasharray: 5000;
   stroke-dashoffset: 5000;
-  /* animation: drawLine 2.5s linear forwards 0.1s; */
 }
 
-/* =========================================
-   8. WIDGET OVERRIDES (SLIDER & DROPDOWN)
-   ========================================= */
-/* Selectize Input Overrides */
+/* INPUT OVERRIDES */
+
+/* selectize clean up */
 .selectize-control.single .selectize-input:after {
   display: none !important;
 }
 
-/* IRS (Ion Range Slider) Overrides */
+/* ion range slider clean up */
 .irs-line {
   height: 4px !important;
   border-radius: 0px;
