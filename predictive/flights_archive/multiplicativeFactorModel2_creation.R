@@ -16,10 +16,10 @@ fix_data <- function(d) {
 
 # load files
 print("loading data...")
-df1 <- read_csv("../../data/flightData.csv")
+df1 <- read_csv("data/flightData.csv")
 df1 <- fix_data(df1)
 
-df2 <- read_csv("../../data/flightData2.csv")
+df2 <- read_csv("data/flightData2.csv")
 df2 <- fix_data(df2)
 
 # BOOKING CURVE

@@ -17,17 +17,6 @@ get_trip_duration <- function(start, end) {
   as.numeric(difftime(end, start, units = "days"))
 }
 
-# --- Cost Calculation ---
-
-# Placeholder price generator
-dummy_cost_function <- function(dep, arr_df) {
-    runif(nrow(arr_df), min = 10, max = 50) |> round()
-}
-
-# dummy_flight_cost_function <- function(dep, arr_df, date) {
-#     runif(nrow(arr_df), min = 10, max = 50) |> round()
-# }
-
 flight_cost <- function(dep, arr_df, date) {
 
   map_dbl(arr_df$code, function(single_dest) {
@@ -36,8 +25,10 @@ flight_cost <- function(dep, arr_df, date) {
       dest = single_dest, 
       trip_date = date
     )
+    # print(paste0("Getting flight price for ", dep, " -> ", single_dest, " on ", date))
+    # print(paste0("Price: ", prices))
 
-    return(prices$price)
+    return(prices)
   })
 }
 
@@ -115,7 +106,7 @@ get_prices_around <- function(departure_code, city_df, departure_date, return_da
   # --- 1. Define the Helper Function ---
   # This encapsulates all the logic for ONE flight leg (getting dates, fetching prices, calculating diffs)
   get_leg_data <- function(origin, dest, center_date, win) {
-    print(paste0("Getting leg data for ", origin, " -> ", dest, " around ", center_date))
+    # print(paste0("Getting leg data for ", origin, " -> ", dest, " around ", center_date))
     
     # A. Build the date window
     date_window <- get_date_window(center_date, win)
@@ -126,8 +117,9 @@ get_prices_around <- function(departure_code, city_df, departure_date, return_da
       
       tryCatch({
         # Call the predictive model
-        pred <- get_flight_prediction(origin, dest, d)
-        return(pred$price)
+        price <- get_flight_prediction(origin, dest, d)
+        # print(paste0("Price for ", d, ": ", price))
+        return(price)
       }, error = function(e) {
         return(NA) # Handle model failure
       })
@@ -156,13 +148,13 @@ get_prices_around <- function(departure_code, city_df, departure_date, return_da
   # Leg 1: DEPARTURE (Origin -> Destination)
   dep_data <- get_leg_data(departure_code, dest_code, departure_date, window)
 
-  print(paste0("Dep Data Prices: ", paste(dep_data$prices, collapse = ", ")))
+  # print(paste0("Dep Data Prices: ", paste(dep_data$prices, collapse = ", ")))
   
   # Leg 2: RETURN (Destination -> Origin)
   # *CRITICAL FIX*: We swap the airports here so we check the price of flying BACK.
   ret_data <- get_leg_data(dest_code, departure_code, return_date, window)
 
-  print(paste0("Ret Data Prices: ", paste(ret_data$prices, collapse = ", ")))
+  # print(paste0("Ret Data Prices: ", paste(ret_data$prices, collapse = ", ")))
 
   # --- 3. Return Combined Structure ---
   list(
@@ -180,106 +172,67 @@ filter_cities_by_budget <- function(budget_range, cities_df) {
     filter(total_cost >= budget_range[1], total_cost <= budget_range[2])
 }
 
-# --- Map Geometry ---
-
-# Included this here because it is a calculation helper used in server_main
 create_curved_path <- function(lon1, lat1, lon2, lat2, num_points = 50) {
-  # Simple Great Circle approximation or bezier curve logic
-  # utilizing the 'geosphere' package usually, or simple interpolation
   
-  # Using gcIntermediate from geosphere is best, 
-  # but here is a self-contained fallback if you don't want extra dependencies:
+  # 1. Helper: Convert Degrees to Radians
+  deg2rad <- function(deg) deg * pi / 180
+  rad2deg <- function(rad) rad * 180 / pi
   
-  t <- seq(0, 1, length.out = num_points)
+  # 2. Convert Lat/Lon to 3D Cartesian Coordinates (Unit Vectors)
+  # (Standard Physics conversion: Spherical -> Cartesian)
+  to_cartesian <- function(lon, lat) {
+    phi <- deg2rad(lat)
+    lambda <- deg2rad(lon)
+    x <- cos(phi) * cos(lambda)
+    y <- cos(phi) * sin(lambda)
+    z <- sin(phi)
+    return(c(x, y, z))
+  }
   
-  # Linear interpolation for coords (Simple Line)
-  # To curve it, we add an offset to the latitude based on a sine wave
-  lons <- lon1 + (lon2 - lon1) * t
-  lats <- lat1 + (lat2 - lat1) * t
+  P1 <- to_cartesian(lon1, lat1)
+  P2 <- to_cartesian(lon2, lat2)
   
-  # Add "arch" effect
-  dist_factor <- sqrt((lon2 - lon1)^2 + (lat2 - lat1)^2)
-  arch_height <- dist_factor * 0.1 # 10% arch
+  # 3. Calculate the Angle between the two points (Omega)
+  # Dot product of two unit vectors = cos(angle)
+  dot <- sum(P1 * P2)
+  # Clamp value to [-1, 1] to avoid numerical errors
+  dot <- max(min(dot, 1), -1)
+  omega <- acos(dot)
   
-  lats <- lats + sin(t * pi) * arch_height
+  # Safety: If points are identical, return straight line (points)
+  if (omega < 1e-6) {
+    return(data.frame(lon = rep(lon1, num_points), lat = rep(lat1, num_points)))
+  }
   
-  data.frame(lon = lons, lat = lats)
+  # 4. SLERP Interpolation
+  # Formula: P(t) = (sin((1-t)*omega)/sin(omega))*P1 + (sin(t*omega)/sin(omega))*P2
+  t_seq <- seq(0, 1, length.out = num_points)
+  
+  path_list <- lapply(t_seq, function(t) {
+    term1 <- sin((1 - t) * omega) / sin(omega)
+    term2 <- sin(t * omega) / sin(omega)
+    
+    # Interpolated 3D Vector
+    P_t <- (term1 * P1) + (term2 * P2)
+    
+    # 5. Convert back to Lat/Lon
+    lat_new <- asin(P_t[3])
+    lon_new <- atan2(P_t[2], P_t[1])
+    
+    return(c(rad2deg(lon_new), rad2deg(lat_new)))
+  })
+  
+  # Convert list to dataframe
+  path_df <- do.call(rbind, path_list)
+  colnames(path_df) <- c("lon", "lat")
+  
+  return(as.data.frame(path_df))
 }
 
-# --- HTML Generation ---
-
-# make_destination_popup <- function(city_data, trip_duration, departure_code) {
-#   flight_percentage <- round((city_data$flight_cost / city_data$total_cost) * 100, 1)
-#   hotel_percentage  <- round((city_data$hotel_cost / city_data$total_cost) * 100, 1)
-#   living_percentage <- round((city_data$living_cost / city_data$total_cost) * 100, 1)
-  
-#   paste0(
-#     '<div>',
-#     '<div class="popup-header">', city_data$city, '</div>',
-#     '<div class="popup-body">',
-#     '<div class="popup-row">',
-#     '<span class="popup-label">Country</span>',
-#     '<span class="popup-value">', city_data$country, '</span>',
-#     '</div>',
-#     '<div class="popup-row">',
-#     '<span class="popup-label">Duration</span>',
-#     '<span class="popup-value">', trip_duration, ' days</span>',
-#     '</div>',
-#     '<div class="breakdown-section">',
-#     '<div class="breakdown-title">Cost Breakdown</div>',
-#     '<div class="cost-bar-container">',
-#     '<div class="cost-bar-segment flight" style="width:', flight_percentage, '%" title="Flight: £', city_data$flight_cost, '"></div>',
-#     '<div class="cost-bar-segment hotel" style="width:', hotel_percentage, '%" title="Hotel: £', city_data$hotel_cost, '"></div>',
-#     '<div class="cost-bar-segment living" style="width:', living_percentage, '%" title="Living: £', city_data$living_cost, '"></div>',
-#     '</div>',
-#     '<div class="cost-legend">',
-#     '<span class="legend-item"><span class="dot flight"></span>Flight</span>',
-#     '<span class="legend-item"><span class="dot hotel"></span>Hotel</span>',
-#     '<span class="legend-item"><span class="dot living"></span>Living</span>',
-#     '</div>',
-#     '</div>',
-#     '<div class="popup-price">',
-#     '<div class="popup-price-label">Total Estimate</div>',
-#     '<div class="popup-price-value">£', city_data$total_cost, '</div>',
-#     '</div>',
-#     '</div>',
-#     '</div>'
-#   )
-# }
-
-# make_destination_box <- function(city_data, trip_duration, departure_code) {
-#   # If data is empty, return generic message (handled in logic or here)
-#   if(nrow(city_data) == 0) return("")
-
-#   # Vectorized paste operation
-#   flight_percentage <- round((city_data$flight_cost / city_data$total_cost) * 100, 1)
-#   hotel_percentage  <- round((city_data$hotel_cost / city_data$total_cost) * 100, 1)
-#   living_percentage <- round((city_data$living_cost / city_data$total_cost) * 100, 1)
-  
-#   paste0(
-#     # Note: data-city attribute is critical for the JS click listener
-#     '<div class="sidebaritem" data-city="', city_data$city, '">',
-#     '<img src="sidebar_images/', city_data$city, '.png" onerror="this.style.display=\'none\'"/>', # Added error handler
-#     '<h3>', city_data$city, '</h3>',
-#     '<div class="cost-bar-container">',
-#     '<div class="cost-bar-segment flight" style="width:', flight_percentage, '%"></div>',
-#     '<div class="cost-bar-segment hotel" style="width:', hotel_percentage, '%"></div>',
-#     '<div class="cost-bar-segment living" style="width:', living_percentage, '%"></div>',
-#     '</div>',
-#     '<div class="cost-legend">',
-#     '<span class="legend-item"><span class="dot flight"></span>Flight</span>',
-#     '<span class="legend-item"><span class="dot hotel"></span>Hotel</span>',
-#     '<span class="legend-item"><span class="dot living"></span>Living</span>',
-#     '</div>',
-#     '<h4>Total: £', city_data$total_cost, '</h4>',
-#     '</div>'
-#   )
-# }
-
 make_destination_popup <- function(city_data, trip_duration, departure_code) {
-  flight_percentage <- round((city_data$flight_cost / city_data$total_cost) * 100, 1)
-  hotel_percentage  <- round((city_data$hotel_cost / city_data$total_cost) * 100, 1)
-  living_percentage <- round((city_data$living_cost / city_data$total_cost) * 100, 1)
+  flight_percentage <- round((city_data$flight_cost / city_data$total_cost) * 100, 2)
+  hotel_percentage  <- round((city_data$hotel_cost / city_data$total_cost) * 100, 2)
+  living_percentage <- round((city_data$living_cost / city_data$total_cost) * 100, 2)
   
   paste0(
     '<div>',
@@ -322,9 +275,9 @@ make_destination_box <- function(city_data, trip_duration, departure_code) {
   if(nrow(city_data) == 0) return("")
 
   # Vectorized paste operation
-  flight_percentage <- round((city_data$flight_cost / city_data$total_cost) * 100, 1)
-  hotel_percentage  <- round((city_data$hotel_cost / city_data$total_cost) * 100, 1)
-  living_percentage <- round((city_data$living_cost / city_data$total_cost) * 100, 1)
+  flight_percentage <- round((city_data$flight_cost / city_data$total_cost) * 100, 2)
+  hotel_percentage  <- round((city_data$hotel_cost / city_data$total_cost) * 100, 2)
+  living_percentage <- round((city_data$living_cost / city_data$total_cost) * 100, 2)
   
   paste0(
     # Note: data-city attribute is critical for the JS click listener
@@ -345,4 +298,25 @@ make_destination_box <- function(city_data, trip_duration, departure_code) {
     '<h4>Total: £', sprintf("%.2f", city_data$total_cost), '</h4>',
     '</div>'
   )
+}
+
+get_wiki_intro <- function(city_name) {
+  # 1. Handle spaces (e.g., "New York" -> "New%20York")
+  safe_title <- URLencode(city_name)
+  
+  # 2. API URL
+  url <- paste0("https://en.wikipedia.org/api/rest_v1/page/summary/", safe_title)
+  
+  # 3. Fetch with error handling
+  tryCatch({
+    # Read the JSON
+    result <- jsonlite::fromJSON(url)
+    
+    # Return the 'extract' (the plain text summary)
+    return(result$extract)
+    
+  }, error = function(e) {
+    # Fallback text if something goes wrong
+    return(paste("Could not fetch description for", city_name))
+  })
 }
