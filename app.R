@@ -10,6 +10,7 @@ library(tidyverse)
 library(dplyr)
 library(shinyWidgets)
 library(jsonlite)
+library(shinycssloaders)
 
 source("R/data.R")
 source("predictive/flight_utils.R")

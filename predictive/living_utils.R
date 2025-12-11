@@ -10,7 +10,7 @@ city_lookup <- c(
   "ZRH" = "Zurich"
 )
 
-scrape_date <- as.Date("2025-12-08")  # Change this to your desired date
+scrape_date <- as.Date("2025-12-08")  
 
 get_total_living_cost <- function(shortcode, arrival_date, leaving_date) {
   
@@ -20,7 +20,6 @@ get_total_living_cost <- function(shortcode, arrival_date, leaving_date) {
   city_name <- city_lookup[shortcode]
   if(is.na(city_name)) return("Error: Invalid City Shortcode")
   
-  # prep stay dates
   stay_dates <- seq(from = as.Date(arrival_date), 
                     to = as.Date(leaving_date) - 1, 
                     by = "day")
@@ -28,24 +27,18 @@ get_total_living_cost <- function(shortcode, arrival_date, leaving_date) {
   city_data <- living_data %>% 
     filter(trimws(tolower(city)) == trimws(tolower(city_name)))
   
-  # Check if city exists
   if (nrow(city_data) == 0) {
     return(paste("Error: City", city_name, "not found."))
   }
   
-  # 2. Calculate Duration
-  # Ensure dates are Date objects
   days <- as.numeric(difftime(as.Date(leaving_date), as.Date(arrival_date), units = "days"))
   
-  # Guard clause for invalid dates
   if (days < 1) {
     return("Error: End date must be after start date.")
   }
   
-  # 3. Define the Daily Basket (The Logic)
-  # We extract values as numeric to prevent arithmetic errors
+  # basket of goods calculation
   
-  # Food & Drink
   cost_breakfast <- city_data$`Cappuccino..Regular.Size.` + (city_data$`Meal.at.an.Inexpensive.Restaurant` * 0.5)
   
   cost_lunch <- city_data$`Meal.at.an.Inexpensive.Restaurant`
@@ -56,29 +49,21 @@ get_total_living_cost <- function(shortcode, arrival_date, leaving_date) {
 
   cost_beer <- city_data$`Domestic.Beer..0.5.Liter.Bottle.` * 2
   
-  # Transport
-  # Assuming 2 uses of local transport and one 5km taxi ride per day
+  # assume some taxi and transport use
   cost_transport <- (city_data$`One.Way.Ticket..Local.Transport.` * 3) + (city_data$`Taxi.Start..Standard.Tariff.`) + (city_data$`Taxi.1.km..Standard.Tariff.` * 5)
   
-  # Activities
-  # Using Cinema ticket as a proxy for a generic "Ticketed Entry" (Museum/Attraction)
+  # general activity cost
   cost_activities <- city_data$`Cinema.Ticket..International.Release.`
   
-  # 4. Sum Daily Total
   daily_total <- cost_breakfast + cost_lunch + cost_dinner + cost_water + cost_beer + cost_transport + cost_activities
   
-  # 5. Calculate Final Estimate
   total_holiday_cost <- daily_total * days
 
-  # Get the current date
-  # start_date <- Sys.Date(arrival_date)
-
-  # Calculate the number of days from the arrival date to the current date
+  # adjust for inflation since scrape date
   days_difference <- as.numeric(as.Date(arrival_date) - scrape_date)
 
   total_holiday_cost <- total_holiday_cost * (1.022^(days_difference/365))
   
-  # Return a detailed list
   return(list(
     diration = days,
     daily = round(daily_total, 2),
