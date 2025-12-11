@@ -19,7 +19,6 @@ This project uses **R** and **Shiny**. To ensure reproducibility and manage pack
 1.  **Clone the repository:**
     ```bash
     git clone [https://github.com/sollykurzman/dataToProduct.git](https://github.com/sollykurzman/dataToProduct.git)
-    cd golow
     ```
 
 2.  **Restore the environment using `renv`:**
