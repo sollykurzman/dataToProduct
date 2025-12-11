@@ -17,8 +17,8 @@ ui <- function() {
       });
 
     $(document).on('click', '#close_sidebar_icon', function() {
-      $('#sidebar').removeClass('closed');
-      $('#map_container').removeClass('sidebar');
+      $('#sidebar').toggleClass('closed');
+      $('#map_container').toggleClass('sidebar');
       Shiny.setInputValue('sidebar_clicked', new Date().getTime());
     });
 
