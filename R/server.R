@@ -25,7 +25,7 @@ server <- function(input, output, session) {
   updateDateInput(session, "departure_date", value = Sys.Date() + 7, min = Sys.Date())
 
   # Load Benchmarks
-  flight_benchmarks <- readRDS("data/flight_thresholds.rds") # Fixed typo 'flght' -> 'flight'
+  flight_benchmarks <- readRDS("data/flight_thresholds.rds")
   flight_lookup <- split(flight_benchmarks, flight_benchmarks$code)
 
   hotel_benchmarks <- readRDS("data/hotel_thresholds.rds")
@@ -52,9 +52,6 @@ server <- function(input, output, session) {
     plotly::config(displayModeBar = FALSE)
   }
 
-  # --- SHARED REACTIVES (OPTIMIZATION) ---
-  # Calculates data once, used by both Plot and Text
-
   # 1. Price Window Data (For Departure & Return Plots)
   price_window_reactive <- reactive({
     req(selected_destination())
@@ -69,7 +66,7 @@ server <- function(input, output, session) {
     get_route_trends(rv$departure_code, city_data$code)
   })
 
-  # --- PLOTS & DESCRIPTIONS ---
+  # PLOTS AND DESCRIPTIONS
 
   # 1. Return Flight Price Comparison
   output$return_plot <- plotly::renderPlotly({
@@ -105,7 +102,7 @@ server <- function(input, output, session) {
   })
 
   output$return_desc <- renderText({
-    prices <- price_window_reactive() # <--- Shared Data
+    prices <- price_window_reactive()
     
     min_price <- min(prices$return_prices)
     min_index <- which.min(prices$return_prices)
@@ -120,9 +117,9 @@ server <- function(input, output, session) {
     }
   })
 
-  # 2. Departure Flight Price Comparison
+  # Departure Flight Price Comparison
   output$departure_plot <- plotly::renderPlotly({
-    prices <- price_window_reactive() # <--- Shared Data
+    prices <- price_window_reactive()
     
     bar_colors <- rep("#D3E4FA", length(prices$departure_prices)) 
     bar_colors[which.min(prices$departure_prices)] <- "#5B97EC"
@@ -168,7 +165,7 @@ server <- function(input, output, session) {
     }
   })
 
-  # 3. CDF Plot (Probability)
+  # CDF Plot
   output$cfd_plot <- plotly::renderPlotly({
     city_data <- selected_destination()
     req(city_data)
